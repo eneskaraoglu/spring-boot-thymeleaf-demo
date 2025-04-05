@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Temel Thymeleaf Örnekleri</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .example-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 th:text="${pageTitle}">Temel Thymeleaf Örnekleri</h1>
+        <p class="lead">Bu sayfa Thymeleaf'in temel özelliklerini göstermek için hazırlanmıştır.</p>
+        
+        <nav class="mt-4 mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                <li class="breadcrumb-item active">Temel Örnekler</li>
+            </ol>
+        </nav>
+        
+        <div class="example-section">
+            <h3>1. Metin İfadeleri</h3>
+            <p>Thymeleaf, HTML içinde dinamik içerik göstermek için <code>${...}</code> ifadesini kullanır.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="code-block">
+                        &lt;p th:text="${username}"&gt;Varsayılan Kullanıcı&lt;/p&gt;
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Sonuç</div>
+                        <div class="card-body">
+                            <p th:text="${username}">Varsayılan Kullanıcı</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="example-section">
+            <h3>2. Koşullu İfadeler</h3>
+            <p>Thymeleaf'te koşullu ifadeler için <code>th:if</code>, <code>th:unless</code> ve <code>th:switch/th:case</code> kullanılır.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="code-block">
+                        &lt;div th:if="${isAdmin}"&gt;<br/>
+                        &nbsp;&nbsp;Admin kullanıcısı içeriği<br/>
+                        &lt;/div&gt;<br/>
+                        &lt;div th:unless="${isAdmin}"&gt;<br/>
+                        &nbsp;&nbsp;Normal kullanıcı içeriği<br/>
+                        &lt;/div&gt;
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Sonuç</div>
+                        <div class="card-body">
+                            <div th:if="${isAdmin}" class="alert alert-info">
+                                Admin kullanıcısı içeriği görüntüleniyor.
+                            </div>
+                            <div th:unless="${isAdmin}" class="alert alert-secondary">
+                                Normal kullanıcı içeriği görüntüleniyor.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="example-section">
+            <h3>3. Döngüler (Iteration)</h3>
+            <p>Liste ve koleksiyonlar üzerinde döngü yapmak için <code>th:each</code> kullanılır.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="code-block">
+                        &lt;ul&gt;<br/>
+                        &nbsp;&nbsp;&lt;li th:each="num : ${#numbers.sequence(1, 5)}" th:text="${num}"&gt;&lt;/li&gt;<br/>
+                        &lt;/ul&gt;
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Sonuç</div>
+                        <div class="card-body">
+                            <ul>
+                                <li th:each="num : ${#numbers.sequence(1, 5)}" th:text="${num}"></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="example-section">
+            <h3>4. Formatlama</h3>
+            <p>Thymeleaf, tarih, saat ve sayılar için çeşitli formatlama özellikleri sunar.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="code-block">
+                        &lt;p&gt;Tarih: &lt;span th:text="${#dates.format(currentDate, 'dd MMMM yyyy')}"&gt;&lt;/span&gt;&lt;/p&gt;<br/>
+                        &lt;p&gt;Saat: &lt;span th:text="${#dates.format(currentDate, 'HH:mm:ss')}"&gt;&lt;/span&gt;&lt;/p&gt;
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Sonuç</div>
+                        <div class="card-body">
+                            <p>Tarih: <span th:text="${#dates.format(currentDate, 'dd MMMM yyyy')}"></span></p>
+                            <p>Saat: <span th:text="${#dates.format(currentDate, 'HH:mm:ss')}"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="example-section">
+            <h3>5. URL Oluşturma</h3>
+            <p>Thymeleaf, <code>@{...}</code> sözdizimi ile URL'ler oluşturabilir ve parametreler ekleyebilir.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="code-block">
+                        &lt;a th:href="@{/users(id=1, action='view')}"&gt;Kullanıcı Detayı&lt;/a&gt;<br/>
+                        &lt;a th:href="@{/users/1}"&gt;Kullanıcı Detayı (RESTful)&lt;/a&gt;
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Sonuç</div>
+                        <div class="card-body">
+                            <p><a th:href="@{/users(id=1, action='view')}">Kullanıcı Detayı (Query Parametresi)</a></p>
+                            <p><a th:href="@{/users/1}">Kullanıcı Detayı (RESTful)</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="example-section">
+            <h3>6. İfade Değişkenleri</h3>
+            <p>Thymeleaf, <code>*{...}</code> sözdizimi ile seçili nesne içindeki özelliklere erişebilir.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="code-block">
+                        &lt;div th:object="${session.user}"&gt;<br/>
+                        &nbsp;&nbsp;&lt;p&gt;İsim: &lt;span th:text="*{firstName}"&gt;&lt;/span&gt;&lt;/p&gt;<br/>
+                        &nbsp;&nbsp;&lt;p&gt;Soyisim: &lt;span th:text="*{lastName}"&gt;&lt;/span&gt;&lt;/p&gt;<br/>
+                        &lt;/div&gt;
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Sonuç</div>
+                        <div class="card-body">
+                            <p>Bu örnek, bir HTTP oturumunda kullanıcı nesnesi olduğunda çalışır.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <a th:href="@{/}" class="btn btn-primary mt-4 mb-5">Ana Sayfaya Dön</a>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

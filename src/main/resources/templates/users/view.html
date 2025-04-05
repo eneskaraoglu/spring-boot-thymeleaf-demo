@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Kullanıcı Detayı</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 th:text="${pageTitle}">Kullanıcı Detayı</h1>
+        
+        <nav class="mt-4 mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/users}">Kullanıcılar</a></li>
+                <li class="breadcrumb-item active" th:text="${user.firstName + ' ' + user.lastName}">Kullanıcı</li>
+            </ol>
+        </nav>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0" th:text="${user.firstName + ' ' + user.lastName + ' Detayları'}">Kullanıcı Detayları</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2 font-weight-bold">ID:</div>
+                    <div class="col-md-10" th:text="${user.id}">1</div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-2 font-weight-bold">Ad:</div>
+                    <div class="col-md-10" th:text="${user.firstName}">Ad</div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-2 font-weight-bold">Soyad:</div>
+                    <div class="col-md-10" th:text="${user.lastName}">Soyad</div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-2 font-weight-bold">E-posta:</div>
+                    <div class="col-md-10" th:text="${user.email}">email@example.com</div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-2 font-weight-bold">Yaş:</div>
+                    <div class="col-md-10" th:text="${user.age}">25</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-warning">Düzenle</a>
+                <a th:href="@{/users/{id}/delete(id=${user.id})}" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')">Sil</a>
+            </div>
+        </div>
+        
+        <a th:href="@{/users}" class="btn btn-secondary mt-4">Kullanıcı Listesine Dön</a>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

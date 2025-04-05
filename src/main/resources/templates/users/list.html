@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Kullanıcı Listesi</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 th:text="${pageTitle}">Kullanıcı Listesi</h1>
+        
+        <nav class="mt-4 mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                <li class="breadcrumb-item active">Kullanıcılar</li>
+            </ol>
+        </nav>
+        
+        <div class="mb-3">
+            <a th:href="@{/users/new}" class="btn btn-primary">Yeni Kullanıcı</a>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Kullanıcı Listesi</h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${users.empty}" class="alert alert-info">
+                    Henüz kayıtlı kullanıcı bulunmamaktadır.
+                </div>
+                
+                <table th:unless="${users.empty}" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Ad</th>
+                            <th>Soyad</th>
+                            <th>E-posta</th>
+                            <th>Yaş</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user : ${users}">
+                            <td th:text="${user.id}">1</td>
+                            <td th:text="${user.firstName}">Ad</td>
+                            <td th:text="${user.lastName}">Soyad</td>
+                            <td th:text="${user.email}">email@example.com</td>
+                            <td th:text="${user.age}">25</td>
+                            <td>
+                                <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-sm btn-warning">Düzenle</a>
+                                <a th:href="@{/users/{id}/delete(id=${user.id})}" 
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')">Sil</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <a th:href="@{/}" class="btn btn-secondary mt-4">Ana Sayfaya Dön</a>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

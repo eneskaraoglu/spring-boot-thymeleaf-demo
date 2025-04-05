@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Thymeleaf Demo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="jumbotron">
+            <h1 class="display-4" th:text="${message}">Spring Boot ve Thymeleaf Demo</h1>
+            <p class="lead">Bu proje, Spring Boot ve Thymeleaf'in temel özelliklerini göstermek için hazırlanmıştır.</p>
+            <hr class="my-4">
+            <p>Aşağıdaki linklerden çeşitli Thymeleaf demolarına göz atabilirsiniz.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Temel Örnekler</h5>
+                            <p class="card-text">Thymeleaf'in temel ifadeleri, koşullar, döngüler ve diğer temel özellikler.</p>
+                            <a th:href="@{/basic-examples}" class="btn btn-primary">Görüntüle</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Form İşlemleri</h5>
+                            <p class="card-text">Thymeleaf ile form işlemleri, doğrulama ve veri girişi örnekleri.</p>
+                            <a th:href="@{/form-demo}" class="btn btn-primary">Görüntüle</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Layout Sistemi</h5>
+                            <p class="card-text">Thymeleaf ile sayfalar arası düzen sisteminin kullanımı.</p>
+                            <a th:href="@{/layout-demo}" class="btn btn-primary">Görüntüle</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Kullanıcı Yönetimi</h5>
+                            <p class="card-text">CRUD işlemleri ile tam bir kullanıcı yönetim örneği.</p>
+                            <a th:href="@{/users}" class="btn btn-primary">Görüntüle</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Analitik Dashboard</h5>
+                            <p class="card-text">Kullanıcı istatistikleri ve aktivite takibi için örnek dashboard.</p>
+                            <a th:href="@{/analytics-dashboard}" class="btn btn-primary">Görüntüle</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Satış Dashboard</h5>
+                            <p class="card-text">Satış istatistikleri ve satış raporlaması için örnek dashboard.</p>
+                            <a th:href="@{/sales-dashboard}" class="btn btn-primary">Görüntüle</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer mt-auto py-3 text-center">
+            <div class="container">
+                <span class="text-muted">Spring Boot ve Thymeleaf Demo © 2025</span>
+            </div>
+        </footer>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/scripts.js}"></script>
+</body>
+</html>

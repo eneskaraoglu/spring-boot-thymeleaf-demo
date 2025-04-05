@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Form Örneği</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 th:text="${pageTitle}">Form Örneği</h1>
+        
+        <nav class="mt-4 mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                <li class="breadcrumb-item active">Form Örneği</li>
+            </ol>
+        </nav>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Thymeleaf Form İşlemleri</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">Thymeleaf, HTML formlarını kolayca işlemek için çeşitli özellikler sunar:</p>
+                <ul class="mb-4">
+                    <li>Form alanları için <code>th:field</code> kullanımı</li>
+                    <li>Form doğrulaması ve hata mesajları gösterimi</li>
+                    <li>Dropdown, checkbox ve radio butonlarını kolayca doldurma</li>
+                    <li>Çoklu seçim işlemleri</li>
+                </ul>
+                
+                <h4>Örnek Form</h4>
+                <form action="#" th:action="@{/form-demo}" method="post" class="mt-3">
+                    <div class="form-group">
+                        <label for="name">İsim</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="İsminizi girin">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">E-posta</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="E-posta adresinizi girin">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="age">Yaş</label>
+                        <input type="number" class="form-control" id="age" name="age" min="0" max="120">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="country">Ülke</label>
+                        <select class="form-control" id="country" name="country">
+                            <option value="">-- Ülke Seçin --</option>
+                            <option value="TR">Türkiye</option>
+                            <option value="US">Amerika Birleşik Devletleri</option>
+                            <option value="GB">Birleşik Krallık</option>
+                            <option value="DE">Almanya</option>
+                            <option value="FR">Fransa</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cinsiyet</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male">
+                            <label class="form-check-label" for="genderMale">Erkek</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female">
+                            <label class="form-check-label" for="genderFemale">Kadın</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="gender" id="genderOther" value="other">
+                            <label class="form-check-label" for="genderOther">Diğer</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>İlgi Alanları</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="interestTech" name="interests" value="technology">
+                            <label class="form-check-label" for="interestTech">Teknoloji</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="interestSports" name="interests" value="sports">
+                            <label class="form-check-label" for="interestSports">Spor</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="interestMusic" name="interests" value="music">
+                            <label class="form-check-label" for="interestMusic">Müzik</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="interestTravel" name="interests" value="travel">
+                            <label class="form-check-label" for="interestTravel">Seyahat</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Mesaj</label>
+                        <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="agreement" name="agreement">
+                        <label class="form-check-label" for="agreement">Kullanım koşullarını kabul ediyorum</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Gönder</button>
+                    <button type="reset" class="btn btn-secondary">Sıfırla</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Form Doğrulama Örneği</h5>
+            </div>
+            <div class="card-body">
+                <p>Thymeleaf, Spring Validation API ile entegre çalışarak form doğrulama işlemlerini kolaylaştırır.</p>
+                <p>Basit bir validasyon örneği:</p>
+                
+                <pre class="bg-light p-3">
+@Controller
+public class FormController {
+    
+    @GetMapping("/form")
+    public String showForm(Model model) {
+        model.addAttribute("user", new User());
+        return "form";
+    }
+    
+    @PostMapping("/form")
+    public String processForm(@Valid @ModelAttribute("user") User user, 
+                              BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            return "form";
+        }
+        // İşlem başarılı
+        return "redirect:/success";
+    }
+}
+                </pre>
+                
+                <p>Form şablonundan hata mesajlarını görüntüleme:</p>
+                <pre class="bg-light p-3">
+&lt;div class="form-group"&gt;
+    &lt;label for="email"&gt;Email&lt;/label&gt;
+    &lt;input type="email" th:field="*{email}" class="form-control" 
+           th:class="${#fields.hasErrors('email')} ? 'form-control is-invalid' : 'form-control'"&gt;
+    &lt;div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"&gt;
+        Email hata mesajı
+    &lt;/div&gt;
+&lt;/div&gt;
+                </pre>
+            </div>
+        </div>
+        
+        <a th:href="@{/}" class="btn btn-primary mt-4 mb-5">Ana Sayfaya Dön</a>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

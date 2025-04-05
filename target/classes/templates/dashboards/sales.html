@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Satış Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .dashboard-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+            transition: transform 0.3s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card {
+            background: linear-gradient(to right, #e74a3b, #be2617);
+            color: white;
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.7;
+        }
+        .chart-container {
+            height: 350px;
+            width: 100%;
+        }
+        .badge-completed {
+            background-color: #1cc88a;
+        }
+        .badge-processing {
+            background-color: #f6c23e;
+        }
+        .badge-cancelled {
+            background-color: #e74a3b;
+        }
+        .currency-value:before {
+            content: "₺";
+            margin-right: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 th:text="${pageTitle}">Satış Dashboard</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Satış Dashboard</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- İstatistik Kartları -->
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="card dashboard-card stat-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Toplam Satış</div>
+                                <div class="h3 mb-0 font-weight-bold currency-value" th:text="${totalSales}">538,750</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-shopping-cart stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card dashboard-card stat-card" style="background: linear-gradient(to right, #4e73df, #224abe);">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Aylık Gelir</div>
+                                <div class="h3 mb-0 font-weight-bold currency-value" th:text="${monthlyRevenue}">127,650</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card dashboard-card stat-card" style="background: linear-gradient(to right, #1cc88a, #169a6f);">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Ortalama Sipariş Tutarı</div>
+                                <div class="h3 mb-0 font-weight-bold currency-value" th:text="${#numbers.formatDecimal(averageOrderValue, 1, 2)}">345.80</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-tag stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card dashboard-card stat-card" style="background: linear-gradient(to right, #f6c23e, #dda20a);">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Dönüşüm Oranı</div>
+                                <div class="h3 mb-0 font-weight-bold" th:text="${conversionRate} + '%'">4.7%</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-percent stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Grafikler ve Tablolar -->
+        <div class="row mt-4">
+            <!-- Aylık Satış Grafiği -->
+            <div class="col-lg-8">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Aylık Satış Grafiği</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="salesChart" class="chart-container"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kategori Satış Dağılımı -->
+            <div class="col-lg-4">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Kategori Bazlı Satış Dağılımı</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" class="chart-container"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <!-- Son Satışlar -->
+            <div class="col-lg-12">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Son Satışlar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Sipariş No</th>
+                                        <th>Müşteri</th>
+                                        <th>Ürün</th>
+                                        <th>Tutar</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="sale : ${recentSales}">
+                                        <td th:text="${sale.orderNo}">#S-1289</td>
+                                        <td th:text="${sale.customer}">Müşteri</td>
+                                        <td th:text="${sale.product}">Ürün</td>
+                                        <td>
+                                            <span class="currency-value" th:text="${#numbers.formatDecimal(sale.amount, 1, 2)}">4,599.90</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${sale.status == 'Tamamlandı'}" class="badge badge-pill badge-completed">Tamamlandı</span>
+                                            <span th:if="${sale.status == 'İşleniyor'}" class="badge badge-pill badge-processing">İşleniyor</span>
+                                            <span th:if="${sale.status == 'İptal Edildi'}" class="badge badge-pill badge-cancelled">İptal Edildi</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4 mb-5">
+            <div class="col-12">
+                <a th:href="@{/}" class="btn btn-primary">Ana Sayfaya Dön</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <script th:inline="javascript">
+        // Satış Grafiği
+        var ctx = document.getElementById('salesChart').getContext('2d');
+        var monthlySales = /*[[${monthlySales}]]*/ [85400, 92700, 88300, 107500, 114200, 120600, 127650];
+        var salesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz'],
+                datasets: [{
+                    label: 'Aylık Satış (₺)',
+                    data: monthlySales,
+                    backgroundColor: 'rgba(231, 74, 59, 0.8)',
+                    borderColor: 'rgba(231, 74, 59, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: false,
+                            callback: function(value) {
+                                return '₺' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                            }
+                        }
+                    }]
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            return data.datasets[tooltipItem.datasetIndex].label + ': ₺' + 
+                                   tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Kategori Dağılım Grafiği
+        var categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        var categorySales = /*[[${categorySales}]]*/ {
+            'Elektronik': 42.8,
+            'Giyim': 28.3,
+            'Ev & Yaşam': 17.5,
+            'Spor': 11.4
+        };
+        
+        var categoryChart = new Chart(categoryCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(categorySales),
+                datasets: [{
+                    data: Object.values(categorySales),
+                    backgroundColor: [
+                        'rgba(231, 74, 59, 0.8)',
+                        'rgba(78, 115, 223, 0.8)',
+                        'rgba(28, 200, 138, 0.8)',
+                        'rgba(246, 194, 62, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            return data.labels[tooltipItem.index] + ': ' + 
+                                   data.datasets[0].data[tooltipItem.index] + '%';
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

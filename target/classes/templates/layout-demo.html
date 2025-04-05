@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Layout Örneği</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 th:text="${pageTitle}">Layout Örneği</h1>
+        
+        <nav class="mt-4 mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                <li class="breadcrumb-item active">Layout Örneği</li>
+            </ol>
+        </nav>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Thymeleaf Layout Dialect</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">Thymeleaf Layout Dialect, sayfalar arasında ortak bileşenleri paylaşmak için güçlü bir yöntemdir.</p>
+                <p>Layout Dialect kullanarak:</p>
+                <ul>
+                    <li>Sayfa şablonları oluşturabilirsiniz</li>
+                    <li>Header, footer, menü gibi ortak bileşenleri tek bir yerden yönetebilirsiniz</li>
+                    <li>Sayfa içeriklerini dinamik olarak değiştirebilirsiniz</li>
+                    <li>Nested layout yapıları kullanabilirsiniz</li>
+                </ul>
+                
+                <div class="alert alert-info">
+                    <strong>Not:</strong> Thymeleaf Layout Dialect kullanmak için ek bağımlılık eklemeniz gerekir:
+                    <pre class="mt-2 mb-0">
+&lt;dependency&gt;
+    &lt;groupId&gt;nz.net.ultraq.thymeleaf&lt;/groupId&gt;
+    &lt;artifactId&gt;thymeleaf-layout-dialect&lt;/artifactId&gt;
+&lt;/dependency&gt;
+                    </pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Layout Örneği</h5>
+            </div>
+            <div class="card-body">
+                <p>Ana şablon dosyası (<code>templates/layouts/main-layout.html</code>):</p>
+                <pre class="bg-light p-3">
+&lt;!DOCTYPE html&gt;
+&lt;html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE"&gt;Thymeleaf Demo&lt;/title&gt;
+    &lt;link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"&gt;
+    &lt;link rel="stylesheet" th:href="@{/css/styles.css}"&gt;
+    &lt;th:block layout:fragment="css"&gt;&lt;/th:block&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- Header --&gt;
+    &lt;header th:replace="fragments/header :: header"&gt;&lt;/header&gt;
+    
+    &lt;!-- Main Content --&gt;
+    &lt;main class="container mt-4"&gt;
+        &lt;div layout:fragment="content"&gt;
+            &lt;!-- Sayfanın içeriği buraya gelecek --&gt;
+        &lt;/div&gt;
+    &lt;/main&gt;
+    
+    &lt;!-- Footer --&gt;
+    &lt;footer th:replace="fragments/footer :: footer"&gt;&lt;/footer&gt;
+    
+    &lt;script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"&gt;&lt;/script&gt;
+    &lt;th:block layout:fragment="scripts"&gt;&lt;/th:block&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+                </pre>
+                
+                <p class="mt-4">İçerik sayfası örneği:</p>
+                <pre class="bg-light p-3">
+&lt;!DOCTYPE html&gt;
+&lt;html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}"&gt;
+&lt;head&gt;
+    &lt;title&gt;Örnek Sayfa&lt;/title&gt;
+    &lt;th:block layout:fragment="css"&gt;
+        &lt;link rel="stylesheet" th:href="@{/css/example-page.css}"&gt;
+    &lt;/th:block&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div layout:fragment="content"&gt;
+        &lt;h1&gt;Örnek Sayfa Başlığı&lt;/h1&gt;
+        &lt;p&gt;Bu, layout içine yerleştirilmiş örnek bir sayfadır.&lt;/p&gt;
+        &lt;!-- Sayfa içeriği --&gt;
+    &lt;/div&gt;
+    
+    &lt;th:block layout:fragment="scripts"&gt;
+        &lt;script th:src="@{/js/example-page.js}"&gt;&lt;/script&gt;
+    &lt;/th:block&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+                </pre>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Fragment Kullanımı</h5>
+            </div>
+            <div class="card-body">
+                <p>Fragmentler, tekrar kullanılabilir kod bloklarını tanımlamak için kullanılır:</p>
+                
+                <p>Header fragment (<code>fragments/header.html</code>):</p>
+                <pre class="bg-light p-3">
+&lt;header th:fragment="header"&gt;
+    &lt;nav class="navbar navbar-expand-lg navbar-dark bg-dark"&gt;
+        &lt;a class="navbar-brand" th:href="@{/}"&gt;Thymeleaf Demo&lt;/a&gt;
+        &lt;button class="navbar-toggler" type="button" data-toggle="collapse" 
+                data-target="#navbarNav"&gt;
+            &lt;span class="navbar-toggler-icon"&gt;&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;div class="collapse navbar-collapse" id="navbarNav"&gt;
+            &lt;ul class="navbar-nav"&gt;
+                &lt;li class="nav-item"&gt;
+                    &lt;a class="nav-link" th:href="@{/}"&gt;Ana Sayfa&lt;/a&gt;
+                &lt;/li&gt;
+                &lt;li class="nav-item"&gt;
+                    &lt;a class="nav-link" th:href="@{/users}"&gt;Kullanıcılar&lt;/a&gt;
+                &lt;/li&gt;
+                &lt;!-- Diğer menü öğeleri --&gt;
+            &lt;/ul&gt;
+        &lt;/div&gt;
+    &lt;/nav&gt;
+&lt;/header&gt;
+                </pre>
+                
+                <p class="mt-4">Footer fragment (<code>fragments/footer.html</code>):</p>
+                <pre class="bg-light p-3">
+&lt;footer th:fragment="footer" class="footer mt-auto py-3 bg-light"&gt;
+    &lt;div class="container text-center"&gt;
+        &lt;span class="text-muted"&gt;Spring Boot ve Thymeleaf Demo © 2025&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/footer&gt;
+                </pre>
+                
+                <p class="mt-4">Fragment çağırma yöntemleri:</p>
+                <pre class="bg-light p-3">
+&lt;!-- Fragment ekleme --&gt;
+&lt;div th:insert="fragments/common :: header"&gt;&lt;/div&gt;
+
+&lt;!-- Fragment değiştirme --&gt;
+&lt;div th:replace="fragments/common :: footer"&gt;&lt;/div&gt;
+
+&lt;!-- Parametreli fragment --&gt;
+&lt;div th:replace="fragments/common :: alert(type='success', message='İşlem başarılı!')"&gt;&lt;/div&gt;
+                </pre>
+            </div>
+        </div>
+        
+        <a th:href="@{/}" class="btn btn-primary mt-4 mb-5">Ana Sayfaya Dön</a>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

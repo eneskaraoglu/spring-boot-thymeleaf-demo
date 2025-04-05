@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Kullanıcı Formu</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 th:text="${pageTitle}">Kullanıcı Formu</h1>
+        
+        <nav class="mt-4 mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/users}">Kullanıcılar</a></li>
+                <li class="breadcrumb-item active" th:text="${user.id == null ? 'Yeni Kullanıcı' : 'Kullanıcı Düzenle'}">Kullanıcı Formu</li>
+            </ol>
+        </nav>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0" th:text="${user.id == null ? 'Yeni Kullanıcı Ekle' : 'Kullanıcı Bilgilerini Düzenle'}">Kullanıcı Formu</h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/users}" th:object="${user}" method="post">
+                    <input type="hidden" th:field="*{id}" />
+                    
+                    <div class="form-group">
+                        <label for="firstName">Ad</label>
+                        <input type="text" class="form-control" id="firstName" th:field="*{firstName}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lastName">Soyad</label>
+                        <input type="text" class="form-control" id="lastName" th:field="*{lastName}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">E-posta</label>
+                        <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="age">Yaş</label>
+                        <input type="number" class="form-control" id="age" th:field="*{age}" min="0" max="120" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                    <a th:href="@{/users}" class="btn btn-secondary">İptal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

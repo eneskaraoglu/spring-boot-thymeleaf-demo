@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Analitik Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .dashboard-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+            transition: transform 0.3s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card {
+            background: linear-gradient(to right, #4e73df, #224abe);
+            color: white;
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.7;
+        }
+        .activity-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .chart-container {
+            height: 350px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 th:text="${pageTitle}">Analitik Dashboard</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Analitik Dashboard</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- İstatistik Kartları -->
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="card dashboard-card stat-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Toplam Kullanıcılar</div>
+                                <div class="h3 mb-0 font-weight-bold" th:text="${totalUsers}">8,459</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card dashboard-card stat-card" style="background: linear-gradient(to right, #36b9cc, #1a8997);">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Yeni Kullanıcılar</div>
+                                <div class="h3 mb-0 font-weight-bold" th:text="${newUsers}">385</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-user-plus stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card dashboard-card stat-card" style="background: linear-gradient(to right, #1cc88a, #169a6f);">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Aktif Kullanıcılar</div>
+                                <div class="h3 mb-0 font-weight-bold" th:text="${activeUsers}">6,271</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-user-check stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card dashboard-card stat-card" style="background: linear-gradient(to right, #f6c23e, #dda20a);">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Dönüşüm Oranı</div>
+                                <div class="h3 mb-0 font-weight-bold" th:text="${conversionRate} + '%'">3.2%</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-percentage stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Grafikler ve Tablolar -->
+        <div class="row mt-4">
+            <!-- Aylık Kullanıcı Grafiği -->
+            <div class="col-lg-8">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Aylık Aktif Kullanıcı Sayısı</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="userChart" class="chart-container"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cihaz Kullanım Dağılımı -->
+            <div class="col-lg-4">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Cihaz Kullanım Dağılımı</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="deviceChart" class="chart-container"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <!-- Son Kullanıcı Aktiviteleri -->
+            <div class="col-lg-12">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Son Kullanıcı Aktiviteleri</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Kullanıcı</th>
+                                        <th>Aktivite</th>
+                                        <th>Zaman</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="activity : ${recentActivities}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-primary rounded-circle text-white mr-3 text-center" 
+                                                     style="width: 36px; height: 36px; line-height: 36px;">
+                                                    <span th:text="${activity.user.substring(0,1)}">A</span>
+                                                </div>
+                                                <span th:text="${activity.user}">Kullanıcı</span>
+                                            </div>
+                                        </td>
+                                        <td th:text="${activity.action}">Aktivite</td>
+                                        <td th:text="${activity.time}">Zaman</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4 mb-5">
+            <div class="col-12">
+                <a th:href="@{/}" class="btn btn-primary">Ana Sayfaya Dön</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <script th:inline="javascript">
+        // Kullanıcı Sayısı Grafiği
+        var ctx = document.getElementById('userChart').getContext('2d');
+        var monthlyData = /*[[${monthlyActiveUsers}]]*/ [4250, 4380, 5120, 5430, 5890, 6150, 6271];
+        var userChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz'],
+                datasets: [{
+                    label: 'Aktif Kullanıcılar',
+                    data: monthlyData,
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                    borderWidth: 2,
+                    lineTension: 0.3
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: false
+                        }
+                    }]
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        });
+        
+        // Cihaz Kullanım Grafiği
+        var deviceCtx = document.getElementById('deviceChart').getContext('2d');
+        var deviceUsage = /*[[${deviceUsage}]]*/ {
+            'Desktop': 62.5,
+            'Mobile': 29.3,
+            'Tablet': 8.2
+        };
+        
+        var deviceChart = new Chart(deviceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(deviceUsage),
+                datasets: [{
+                    data: Object.values(deviceUsage),
+                    backgroundColor: [
+                        'rgba(78, 115, 223, 0.8)',
+                        'rgba(28, 200, 138, 0.8)',
+                        'rgba(246, 194, 62, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                cutoutPercentage: 65,
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                }
+            }
+        });
+    </script>
+</body>
+</html>
