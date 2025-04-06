@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Stok Hareketleri</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 1.5rem;
+        }
+        
+        .btn-action {
+            margin-right: 0.3rem;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+        }
+        
+        .badge-in {
+            background-color: #28a745;
+        }
+        
+        .badge-out {
+            background-color: #dc3545;
+        }
+        
+        .badge-status {
+            padding: 0.5rem 0.75rem;
+            border-radius: 50rem;
+            font-weight: 500;
+        }
+        
+        .alert {
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #6a11cb;
+            border-color: #6a11cb;
+        }
+        
+        .page-link {
+            color: #6a11cb;
+        }
+        
+        .page-link:hover {
+            color: #2575fc;
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+            
+            .btn-action {
+                width: 2rem;
+                height: 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-0" th:text="${pageTitle}">Stok Hareketleri</h1>
+                </div>
+                <div class="col-md-6 text-md-right mt-3 mt-md-0">
+                    <a th:href="@{/stock/movements/new}" class="btn btn-light">
+                        <i class="fas fa-plus mr-2"></i>Yeni Hareket
+                    </a>
+                    <a th:href="@{/}" class="btn btn-outline-light ml-2">
+                        <i class="fas fa-home mr-2"></i>Ana Sayfa
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span th:text="${successMessage}">İşlem başarılı!</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span th:text="${errorMessage}">Bir hata oluştu!</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <!-- Stock Movements Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Stok Hareketleri</h5>
+                <div>
+                    <button id="toggleFilters" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-filter mr-1"></i>Filtreler
+                    </button>
+                </div>
+            </div>
+            <div id="filterPanel" class="card-body bg-light" style="display: none;">
+                <form th:action="@{/stock/movements}" method="get" class="row">
+                    <div class="form-group col-md-4">
+                        <label for="stockItemId">Stok Kalemi</label>
+                        <select class="form-control form-control-sm" id="stockItemId" name="stockItemId">
+                            <option value="">Tümü</option>
+                            <option th:each="item : ${stockItems}" th:value="${item.id}" 
+                                    th:text="${item.stockCode + ' - ' + item.stockName}">
+                                STK0001 - Ürün Adı
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="movementType">Hareket Tipi</label>
+                        <select class="form-control form-control-sm" id="movementType" name="movementType">
+                            <option value="">Tümü</option>
+                            <option value="IN">Giriş</option>
+                            <option value="OUT">Çıkış</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="startDate">Başlangıç Tarihi</label>
+                        <input type="text" class="form-control form-control-sm datepicker" id="startDate" name="startDate" placeholder="GG/AA/YYYY">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="endDate">Bitiş Tarihi</label>
+                        <input type="text" class="form-control form-control-sm datepicker" id="endDate" name="endDate" placeholder="GG/AA/YYYY">
+                    </div>
+                    <div class="col-12 text-right">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-search mr-1"></i>Ara
+                        </button>
+                        <button type="reset" class="btn btn-secondary btn-sm ml-2">
+                            <i class="fas fa-redo mr-1"></i>Temizle
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="stockMovementsTable" class="table table-striped table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Stok Kodu/Adı</th>
+                                <th>Hareket Tipi</th>
+                                <th>Miktar</th>
+                                <th>Neden</th>
+                                <th>Referans No</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="movement : ${stockMovements}">
+                                <td th:text="${#temporals.format(movement.movementDate, 'dd.MM.yyyy HH:mm')}">01.01.2025 15:30</td>
+                                <td th:text="${movement.stockItemName}">STK0001 - Ürün Adı</td>
+                                <td>
+                                    <span th:if="${movement.movementType == 'IN'}" class="badge badge-pill badge-in badge-status">Giriş</span>
+                                    <span th:if="${movement.movementType == 'OUT'}" class="badge badge-pill badge-out badge-status">Çıkış</span>
+                                </td>
+                                <td th:text="${movement.quantity}">10</td>
+                                <td th:text="${movement.reason}">Satın Alma</td>
+                                <td th:text="${movement.referenceNo}">REF000123</td>
+                                <td>
+                                    <a th:href="@{/stock/movements/{id}(id=${movement.id})}" class="btn btn-info btn-sm btn-action" title="Görüntüle">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a th:href="@{/stock/movements/{id}/edit(id=${movement.id})}" class="btn btn-warning btn-sm btn-action" title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a th:href="@{/stock/movements/{id}/delete(id=${movement.id})}" class="btn btn-danger btn-sm btn-action" 
+                                        title="Sil" onclick="return confirm('Bu hareketi silmek istediğinizden emin misiniz? Stok miktarı güncellenecektir.')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${stockMovements.empty}">
+                                <td colspan="7" class="text-center py-4">Henüz stok hareketi bulunmamaktadır.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div th:if="${!stockMovements.empty}" class="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <span th:text="${'Toplam ' + stockMovements.size() + ' kayıt gösteriliyor'}">Toplam kayıt</span>
+                    </div>
+                    <nav aria-label="Page navigation" th:if="${totalPages > 1}">
+                        <ul class="pagination pagination-sm">
+                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/stock/movements(page=0, size=${pageSize})}" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/stock/movements(page=${currentPage - 1}, size=${pageSize})}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                                th:classappend="${currentPage == i ? 'active' : ''}">
+                                <a class="page-link" th:href="@{/stock/movements(page=${i}, size=${pageSize})}" th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/stock/movements(page=${currentPage + 1}, size=${pageSize})}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/stock/movements(page=${totalPages - 1}, size=${pageSize})}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
+    <script th:src="@{/js/scripts.js}"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // DataTable initialization
+            $('#stockMovementsTable').DataTable({
+                "ordering": true,
+                "searching": true,
+                "paging": false,
+                "info": false,
+                "responsive": true,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                }
+            });
+            
+            // Filter toggle button
+            $('#toggleFilters').click(function() {
+                $('#filterPanel').slideToggle();
+            });
+            
+            // Date picker
+            $(".datepicker").flatpickr({
+                dateFormat: "Y-m-d",
+                locale: "tr",
+                allowInput: true
+            });
+        });
+    </script>
+</body>
+</html>

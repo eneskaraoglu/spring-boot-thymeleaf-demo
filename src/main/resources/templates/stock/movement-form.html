@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Stok Hareketi</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 1.5rem;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-control {
+            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ced4da;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .required-label::after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .btn-action {
+            margin-right: 0.5rem;
+        }
+        
+        .movement-type-in {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+        
+        .movement-type-in:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        .movement-type-out {
+            border-color: #dc3545;
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+        
+        .movement-type-out:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .custom-radio .custom-control-label::before {
+            border-width: 2px;
+        }
+        
+        .movement-type-container {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stock-info {
+            background-color: #f0f8ff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #007bff;
+        }
+        
+        @media (max-width: 576px) {
+            .page-header {
+                padding: 1.5rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .form-actions .btn {
+                margin-bottom: 0.5rem;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-0" th:text="${pageTitle}">Stok Hareketi</h1>
+                </div>
+                <div class="col-md-6 text-md-right mt-3 mt-md-0">
+                    <a th:href="@{/stock/movements}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left mr-2"></i>Listeye Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stock Movement Form -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0" th:text="${isNew ? 'Yeni Stok Hareketi' : 'Stok Hareketi Düzenle'}">Stok Hareketi Formu</h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/stock/movements}" th:object="${stockMovement}" method="post">
+                    <input type="hidden" th:field="*{id}" />
+                    
+                    <!-- Stok Ürünü Seçimi -->
+                    <div class="form-group">
+                        <label for="stockItemId" class="required-label">Stok Kalemi</label>
+                        <select class="form-control" id="stockItemId" th:field="*{stockItemId}" required 
+                                th:disabled="${!isNew && stockMovement.id != null}">
+                            <option value="">-- Stok Kalemi Seçin --</option>
+                            <option th:each="item : ${stockItems}" th:value="${item.id}" 
+                                    th:text="${item.stockCode + ' - ' + item.stockName + ' (' + item.currentStock + ' ' + item.unit + ')'}">
+                                STK0001 - Ürün Adı (50 Adet)
+                            </option>
+                        </select>
+                        <div id="stockInfo" class="stock-info mt-3" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Mevcut Stok:</strong>
+                                    <span id="currentStock">0</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Birim:</strong>
+                                    <span id="unit">Adet</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Birim Fiyat:</strong>
+                                    <span id="unitPrice">₺0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hareket Tipi -->
+                    <div class="form-group movement-type-container">
+                        <label class="required-label">Hareket Tipi</label>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="movementTypeIn" name="movementType" th:field="*{movementType}" 
+                                           class="custom-control-input movement-type-in" value="IN" required>
+                                    <label class="custom-control-label" for="movementTypeIn">
+                                        <i class="fas fa-arrow-down text-success mr-2"></i>Giriş (Stok Artır)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="movementTypeOut" name="movementType" th:field="*{movementType}" 
+                                           class="custom-control-input movement-type-out" value="OUT" required>
+                                    <label class="custom-control-label" for="movementTypeOut">
+                                        <i class="fas fa-arrow-up text-danger mr-2"></i>Çıkış (Stok Azalt)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Miktar -->
+                        <div class="form-group col-md-4">
+                            <label for="quantity" class="required-label">Miktar</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="quantity" th:field="*{quantity}" min="1" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="unitSpan">Adet</span>
+                                </div>
+                            </div>
+                            <small id="stockWarning" class="form-text text-danger" style="display: none;">
+                                Yetersiz stok miktarı!
+                            </small>
+                        </div>
+                        
+                        <!-- Hareket Nedeni -->
+                        <div class="form-group col-md-4">
+                            <label for="reason" class="required-label">Hareket Nedeni</label>
+                            <select class="form-control" id="reason" th:field="*{reason}" required>
+                                <option value="">-- Neden Seçin --</option>
+                                <option th:each="r : ${movementReasons}" th:value="${r}" th:text="${r}">Neden</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Referans No -->
+                        <div class="form-group col-md-4">
+                            <label for="referenceNo">Referans No</label>
+                            <input type="text" class="form-control" id="referenceNo" th:field="*{referenceNo}" 
+                                   placeholder="Fatura no, sipariş no, vb.">
+                        </div>
+                        
+                        <!-- Notlar -->
+                        <div class="form-group col-md-12">
+                            <label for="notes">Notlar</label>
+                            <textarea class="form-control" id="notes" th:field="*{notes}" rows="3" 
+                                      placeholder="Hareket hakkında ek bilgiler..."></textarea>
+                        </div>
+                        
+                        <!-- Hareket Tarihi -->
+                        <div class="form-group col-md-6">
+                            <label for="movementDate">Tarih</label>
+                            <input type="text" class="form-control datepicker" id="movementDate" placeholder="GG/AA/YYYY SS:DD" 
+                                   readonly th:field="*{movementDate}">
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="form-actions d-flex justify-content-between align-items-center">
+                        <div>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save mr-2"></i>Kaydet
+                            </button>
+                            <a th:href="@{/stock/movements}" class="btn btn-secondary ml-2">
+                                <i class="fas fa-times mr-2"></i>İptal
+                            </a>
+                        </div>
+                        <div th:if="${!isNew}">
+                            <a th:href="@{/stock/movements/{id}/delete(id=${stockMovement.id})}" class="btn btn-danger" 
+                                onclick="return confirm('Bu hareketi silmek istediğinizden emin misiniz? Stok miktarı güncellenecektir.')">
+                                <i class="fas fa-trash mr-2"></i>Sil
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
+    <script th:src="@{/js/scripts.js}"></script>
+    
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            // Stock items data
+            var stockItems = /*[[${stockItems}]]*/ [];
+            var stockItemsMap = {};
+            
+            // Create a map of stock items for quick lookup
+            stockItems.forEach(function(item) {
+                stockItemsMap[item.id] = {
+                    currentStock: item.currentStock,
+                    unit: item.unit,
+                    unitPrice: item.unitPrice
+                };
+            });
+            
+            // Date & Time picker
+            $(".datepicker").flatpickr({
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                locale: "tr",
+                allowInput: true,
+                defaultDate: new Date()
+            });
+            
+            // Show stock info when a stock item is selected
+            $('#stockItemId').change(function() {
+                var selectedId = $(this).val();
+                if (selectedId && stockItemsMap[selectedId]) {
+                    var item = stockItemsMap[selectedId];
+                    $('#currentStock').text(item.currentStock + ' ' + item.unit);
+                    $('#unit').text(item.unit);
+                    $('#unitPrice').text('₺' + item.unitPrice.toFixed(2));
+                    $('#unitSpan').text(item.unit);
+                    $('#stockInfo').slideDown();
+                } else {
+                    $('#stockInfo').slideUp();
+                }
+                
+                validateQuantity();
+            });
+            
+            // Trigger change to initialize for edit mode
+            $('#stockItemId').trigger('change');
+            
+            // Quantity validation
+            $('#quantity, input[name="movementType"]').on('change input', validateQuantity);
+            
+            function validateQuantity() {
+                var selectedId = $('#stockItemId').val();
+                var quantity = parseInt($('#quantity').val()) || 0;
+                var movementType = $('input[name="movementType"]:checked').val();
+                
+                if (selectedId && stockItemsMap[selectedId] && movementType === 'OUT') {
+                    var currentStock = stockItemsMap[selectedId].currentStock;
+                    
+                    if (quantity > currentStock) {
+                        $('#stockWarning').show();
+                        $('#submitBtn').prop('disabled', true);
+                    } else {
+                        $('#stockWarning').hide();
+                        $('#submitBtn').prop('disabled', false);
+                    }
+                } else {
+                    $('#stockWarning').hide();
+                    $('#submitBtn').prop('disabled', false);
+                }
+            }
+            
+            // Form validation
+            $('form').on('submit', function(e) {
+                var form = $(this);
+                if (form[0].checkValidity() === false) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                form.addClass('was-validated');
+            });
+        });
+    </script>
+</body>
+</html>
