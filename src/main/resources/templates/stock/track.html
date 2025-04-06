@@ -270,12 +270,22 @@
                 
                 <div class="form-row">
                     <div class="col-md-8">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <form th:action="@{/stock/track}" method="get" class="form-inline">
+                            <!-- Kategori parametresini koru -->
+                            <input type="hidden" name="category" th:value="${selectedCategory}">
+                            <div class="input-group w-100">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                </div>
+                                <input type="text" name="search" class="form-control" placeholder="Stok adı veya kodu ile ara..."
+                                       th:value="${search}">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-primary">Ara</button>
+                                    <a th:if="${search != null}" th:href="@{/stock/track(category=${selectedCategory})}" 
+                                       class="btn btn-secondary">Temizle</a>
+                                </div>
                             </div>
-                            <input type="text" id="stockSearch" class="form-control" placeholder="Stok adı veya kodu ile ara...">
-                        </div>
+                        </form>
                     </div>
                     <div class="col-md-4 text-right">
                         <div class="btn-group">
@@ -293,6 +303,14 @@
         
         <!-- Card View -->
         <div id="cardView">
+            <!-- Arama sonuçları bildirimi -->
+            <div th:if="${search != null && search != ''}" class="alert alert-info mb-3">
+                <i class="fas fa-search mr-2"></i>
+                <span>Arama sonuçları: </span>
+                <strong th:text="${search}"></strong>
+                <a th:href="@{/stock/track(category=${selectedCategory})}" class="btn btn-sm btn-outline-primary ml-3">Tüm Kayıtları Göster</a>
+            </div>
+            
             <div class="row">
                 <div th:each="item : ${stockItems}" class="col-lg-4 col-md-6">
                     <div class="stock-card">
@@ -364,38 +382,46 @@
                     <span th:text="${'Toplam ' + stockItems.size() + ' kayıt gösteriliyor'}">Toplam kayıt</span>
                 </div>
                 <nav aria-label="Page navigation" th:if="${totalPages > 1}">
-                    <ul class="pagination pagination-sm">
-                        <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                            <a class="page-link" th:href="@{/stock/track(page=0, size=${pageSize}, category=${selectedCategory})}" aria-label="First">
-                                <span aria-hidden="true">&laquo;&laquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                            <a class="page-link" th:href="@{/stock/track(page=${currentPage - 1}, size=${pageSize}, category=${selectedCategory})}" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
-                            th:classappend="${currentPage == i ? 'active' : ''}">
-                            <a class="page-link" th:href="@{/stock/track(page=${i}, size=${pageSize}, category=${selectedCategory})}" th:text="${i + 1}">1</a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                            <a class="page-link" th:href="@{/stock/track(page=${currentPage + 1}, size=${pageSize}, category=${selectedCategory})}" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                            <a class="page-link" th:href="@{/stock/track(page=${totalPages - 1}, size=${pageSize}, category=${selectedCategory})}" aria-label="Last">
-                                <span aria-hidden="true">&raquo;&raquo;</span>
-                            </a>
-                        </li>
-                    </ul>
+                <ul class="pagination pagination-sm">
+                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/stock/track(page=0, size=${pageSize}, category=${selectedCategory}, search=${search})}" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/stock/track(page=${currentPage - 1}, size=${pageSize}, category=${selectedCategory}, search=${search})}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                </a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                th:classappend="${currentPage == i ? 'active' : ''}">
+                <a class="page-link" th:href="@{/stock/track(page=${i}, size=${pageSize}, category=${selectedCategory}, search=${search})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/stock/track(page=${currentPage + 1}, size=${pageSize}, category=${selectedCategory}, search=${search})}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+                </a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/stock/track(page=${totalPages - 1}, size=${pageSize}, category=${selectedCategory}, search=${search})}" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+                </li>
+                </ul>
                 </nav>
             </div>
         </div>
         
         <!-- Table View -->
         <div id="tableView" style="display: none;">
+            <!-- Arama sonuçları bildirimi -->
+            <div th:if="${search != null && search != ''}" class="alert alert-info mb-3">
+                <i class="fas fa-search mr-2"></i>
+                <span>Arama sonuçları: </span>
+                <strong th:text="${search}"></strong>
+                <a th:href="@{/stock/track(category=${selectedCategory})}" class="btn btn-sm btn-outline-primary ml-3">Tüm Kayıtları Göster</a>
+            </div>
+            
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
@@ -476,33 +502,39 @@
                 }
             });
             
-            // Search functionality
-            $('#stockSearch').on('keyup', function() {
+            // Client-side filtering (for instant filtering)
+            $("input[name='search']").on('keyup', function() {
                 const searchValue = $(this).val().toLowerCase();
                 
-                // Card view search
-                $('.stock-card').each(function() {
-                    const stockName = $(this).find('.stock-card-header h5').text().toLowerCase();
-                    const stockCode = $(this).find('.stock-card-header small').text().toLowerCase();
+                if (searchValue.length > 1) {
+                    // Card view filtering
+                    $('.stock-card').each(function() {
+                        const stockName = $(this).find('.stock-card-header h5').text().toLowerCase();
+                        const stockCode = $(this).find('.stock-card-header small').text().toLowerCase();
+                        
+                        if (stockName.includes(searchValue) || stockCode.includes(searchValue)) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
                     
-                    if (stockName.includes(searchValue) || stockCode.includes(searchValue)) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
-                
-                // Table view search
-                $('#stockItemsTable tbody tr').each(function() {
-                    const stockName = $(this).find('td:eq(1)').text().toLowerCase();
-                    const stockCode = $(this).find('td:eq(0)').text().toLowerCase();
-                    
-                    if (stockName.includes(searchValue) || stockCode.includes(searchValue)) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
+                    // Table view filtering
+                    $('#stockItemsTable tbody tr').each(function() {
+                        const stockName = $(this).find('td:eq(1)').text().toLowerCase();
+                        const stockCode = $(this).find('td:eq(0)').text().toLowerCase();
+                        
+                        if (stockName.includes(searchValue) || stockCode.includes(searchValue)) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                } else if (searchValue.length === 0) {
+                    // Show all items again when search is cleared
+                    $('.stock-card').show();
+                    $('#stockItemsTable tbody tr').show();
+                }
             });
         });
     </script>

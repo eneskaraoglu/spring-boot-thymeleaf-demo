@@ -242,8 +242,23 @@ public class StockController {
     public String trackStock(@RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size,
                             @RequestParam(required = false) String category,
+                            @RequestParam(required = false) String search,
                             Model model) {
-        Page<StockItem> stockItemPage = stockService.findPaginatedStockItems(page, size);
+        Page<StockItem> stockItemPage;
+        
+        if (search != null && !search.trim().isEmpty()) {
+            // Eğer arama parametresi varsa, stok kodu ve adına göre ara
+            stockItemPage = stockService.searchStockItems(search, page, size);
+            model.addAttribute("search", search);
+        } else if (category != null && !category.trim().isEmpty()) {
+            // Eğer kategori parametresi varsa, kategoriye göre ara
+            stockItemPage = stockService.searchStockItemsByCodeAndName(null, null, category, null, page, size);
+            model.addAttribute("selectedCategory", category);
+        } else {
+            // Herhangi bir filtre yoksa tüm kayıtları göster
+            stockItemPage = stockService.findPaginatedStockItems(page, size);
+        }
+        
         long totalItems = stockService.getTotalStockItems();
         int totalPages = stockItemPage.getTotalPages();
         
