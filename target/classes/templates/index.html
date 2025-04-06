@@ -5,84 +5,227 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle}">Thymeleaf Demo</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .feature-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #6a11cb;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border: none;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s;
+            border-radius: 30px;
+            padding: 0.5rem 1.5rem;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+        .demo-section {
+            margin-top: 3rem;
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            color: #495057;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+        }
+        .footer {
+            background-color: white;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 2rem 1rem;
+            }
+            .feature-card {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="jumbotron">
-            <h1 class="display-4" th:text="${message}">Spring Boot ve Thymeleaf Demo</h1>
-            <p class="lead">Bu proje, Spring Boot ve Thymeleaf'in temel özelliklerini göstermek için hazırlanmıştır.</p>
-            <hr class="my-4">
-            <p>Aşağıdaki linklerden çeşitli Thymeleaf demolarına göz atabilirsiniz.</p>
+    <div class="container pt-4 pb-4">
+        <!-- Hero Section -->
+        <div class="hero-section text-center">
+            <h1 class="display-4 font-weight-bold" th:text="${message}">Spring Boot ve Thymeleaf Demo</h1>
+            <p class="lead mt-3">Bu proje, Spring Boot ve Thymeleaf'in temel özelliklerini göstermek için hazırlanmıştır.</p>
+            <hr class="my-4 bg-light">
+            <p>Aşağıdaki demo bölümlerini inceleyerek Thymeleaf'in gücünü keşfedin.</p>
             
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Temel Örnekler</h5>
-                            <p class="card-text">Thymeleaf'in temel ifadeleri, koşullar, döngüler ve diğer temel özellikler.</p>
-                            <a th:href="@{/basic-examples}" class="btn btn-primary">Görüntüle</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Form İşlemleri</h5>
-                            <p class="card-text">Thymeleaf ile form işlemleri, doğrulama ve veri girişi örnekleri.</p>
-                            <a th:href="@{/form-demo}" class="btn btn-primary">Görüntüle</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Layout Sistemi</h5>
-                            <p class="card-text">Thymeleaf ile sayfalar arası düzen sisteminin kullanımı.</p>
-                            <a th:href="@{/layout-demo}" class="btn btn-primary">Görüntüle</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
+        </div>
+        
+        <!-- Stok Yönetimi Bölümü -->
+        <div class="demo-section">
+            <h2 class="section-title">Stok Yönetimi</h2>
             <div class="row">
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Kullanıcı Yönetimi</h5>
-                            <p class="card-text">CRUD işlemleri ile tam bir kullanıcı yönetim örneği.</p>
-                            <a th:href="@{/users}" class="btn btn-primary">Görüntüle</a>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <h5 class="card-title">Stok Tanımlama</h5>
+                            <p class="card-text">Yeni stok kalemleri tanımlayın, düzenleyin ve yönetin.</p>
+                            <a th:href="@{/stock/items}" class="btn btn-primary">İncele</a>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Analitik Dashboard</h5>
-                            <p class="card-text">Kullanıcı istatistikleri ve aktivite takibi için örnek dashboard.</p>
-                            <a th:href="@{/analytics-dashboard}" class="btn btn-primary">Görüntüle</a>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <h5 class="card-title">Stok Hareketi</h5>
+                            <p class="card-text">Giriş ve çıkış hareketleri ile stok miktarlarını güncelleyin.</p>
+                            <a th:href="@{/stock/movements}" class="btn btn-primary">İncele</a>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Satış Dashboard</h5>
-                            <p class="card-text">Satış istatistikleri ve satış raporlaması için örnek dashboard.</p>
-                            <a th:href="@{/sales-dashboard}" class="btn btn-primary">Görüntüle</a>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h5 class="card-title">Stok Takip</h5>
+                            <p class="card-text">Mevcut stok durumlarını görüntüleyin ve analiz edin.</p>
+                            <a th:href="@{/stock/track}" class="btn btn-primary">İncele</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <footer class="footer mt-auto py-3 text-center">
-            <div class="container">
-                <span class="text-muted">Spring Boot ve Thymeleaf Demo © 2025</span>
+        <!-- Temel Örnekler Bölümü -->
+        <div class="demo-section">
+            <h2 class="section-title">Temel Thymeleaf Özellikleri</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h5 class="card-title">Temel Örnekler</h5>
+                            <p class="card-text">Thymeleaf'in temel ifadeleri, koşullar, döngüler ve diğer temel özelliklerini keşfedin.</p>
+                            <a th:href="@{/basic-examples}" class="btn btn-primary">İncele</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-wpforms"></i>
+                            </div>
+                            <h5 class="card-title">Form İşlemleri</h5>
+                            <p class="card-text">Thymeleaf ile form işlemleri, doğrulama ve veri girişi örneklerini öğrenin.</p>
+                            <a th:href="@{/form-demo}" class="btn btn-primary">İncele</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-th-large"></i>
+                            </div>
+                            <h5 class="card-title">Layout Sistemi</h5>
+                            <p class="card-text">Thymeleaf ile sayfalar arası düzen sisteminin kullanımını öğrenin.</p>
+                            <a th:href="@{/layout-demo}" class="btn btn-primary">İncele</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Diğer Uygulamalar Bölümü -->
+        <div class="demo-section">
+            <h2 class="section-title">Diğer Örnekler</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h5 class="card-title">Kullanıcı Yönetimi</h5>
+                            <p class="card-text">CRUD işlemleri ile tam bir kullanıcı yönetim örneği inceleyin.</p>
+                            <a th:href="@{/users}" class="btn btn-primary">İncele</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h5 class="card-title">Analitik Dashboard</h5>
+                            <p class="card-text">Kullanıcı istatistikleri ve aktivite takibi için örnek dashboard uygulamasını görüntüleyin.</p>
+                            <a th:href="@{/analytics-dashboard}" class="btn btn-primary">İncele</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <h5 class="card-title">Satış Dashboard</h5>
+                            <p class="card-text">Satış istatistikleri ve satış raporlaması için örnek dashboard uygulamasını keşfedin.</p>
+                            <a th:href="@{/sales-dashboard}" class="btn btn-primary">İncele</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="footer mt-5 text-center rounded shadow-sm">
+            <div class="container py-3">
+                <p class="text-muted mb-0">
+                    <i class="fas fa-code"></i> Spring Boot ve Thymeleaf Demo © 2025
+                </p>
             </div>
         </footer>
     </div>
@@ -91,5 +234,32 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script th:src="@{/js/scripts.js}"></script>
+    
+    <!-- Mobil için dokunma efektleri -->  
+    <script>
+        // Mobil cihazlarda dokunma işlemleri için iyileştirmeler
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.feature-card');
+            
+            // Dokunmatik cihazlarda kart animasyonu
+            if ('ontouchstart' in window) {
+                cards.forEach(card => {
+                    card.addEventListener('touchstart', function() {
+                        this.style.transform = 'scale(0.98)';
+                    });
+                    
+                    card.addEventListener('touchend', function() {
+                        this.style.transform = '';
+                        setTimeout(() => {
+                            this.style.transform = 'translateY(-5px)';
+                        }, 100);
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 600);
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
