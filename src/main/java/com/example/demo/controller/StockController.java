@@ -4,6 +4,7 @@ import com.example.demo.model.StockItem;
 import com.example.demo.model.StockMovement;
 import com.example.demo.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,16 +28,26 @@ public class StockController {
     @GetMapping("/items")
     public String listStockItems(@RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size,
+                                @RequestParam(required = false) String search,
                                 Model model) {
-        List<StockItem> stockItems = stockService.findPaginatedStockItems(page, size);
-        int totalItems = stockService.getTotalStockItems();
-        int totalPages = (int) Math.ceil((double) totalItems / size);
+        Page<StockItem> stockItemPage;
         
-        model.addAttribute("stockItems", stockItems);
+        if (search != null && !search.trim().isEmpty()) {
+            stockItemPage = stockService.searchStockItems(search, page, size);
+            model.addAttribute("search", search);
+        } else {
+            stockItemPage = stockService.findPaginatedStockItems(page, size);
+        }
+        
+        long totalItems = stockService.getTotalStockItems();
+        int totalPages = stockItemPage.getTotalPages();
+        
+        model.addAttribute("stockItems", stockItemPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("pageSize", size);
         model.addAttribute("pageTitle", "Stok Tanımlama");
+        model.addAttribute("categories", stockService.getAllCategories());
         
         return "stock/items";
     }
@@ -104,11 +115,11 @@ public class StockController {
     public String listStockMovements(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "10") int size,
                                      Model model) {
-        List<StockMovement> stockMovements = stockService.findPaginatedStockMovements(page, size);
-        int totalItems = stockService.getTotalStockMovements();
-        int totalPages = (int) Math.ceil((double) totalItems / size);
+        Page<StockMovement> stockMovementPage = stockService.findPaginatedStockMovements(page, size);
+        long totalItems = stockService.getTotalStockMovements();
+        int totalPages = stockMovementPage.getTotalPages();
         
-        model.addAttribute("stockMovements", stockMovements);
+        model.addAttribute("stockMovements", stockMovementPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("pageSize", size);
@@ -144,7 +155,7 @@ public class StockController {
     @GetMapping("/movements/{id}")
     public String viewStockMovement(@PathVariable Long id, Model model) {
         StockMovement stockMovement = stockService.findStockMovementById(id);
-        StockItem stockItem = stockService.findStockItemById(stockMovement.getStockItemId());
+        StockItem stockItem = stockMovement.getStockItem();
         
         model.addAttribute("stockMovement", stockMovement);
         model.addAttribute("stockItem", stockItem);
@@ -183,11 +194,11 @@ public class StockController {
                             @RequestParam(defaultValue = "10") int size,
                             @RequestParam(required = false) String category,
                             Model model) {
-        List<StockItem> stockItems = stockService.findPaginatedStockItems(page, size);
-        int totalItems = stockService.getTotalStockItems();
-        int totalPages = (int) Math.ceil((double) totalItems / size);
+        Page<StockItem> stockItemPage = stockService.findPaginatedStockItems(page, size);
+        long totalItems = stockService.getTotalStockItems();
+        int totalPages = stockItemPage.getTotalPages();
         
-        model.addAttribute("stockItems", stockItems);
+        model.addAttribute("stockItems", stockItemPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("pageSize", size);

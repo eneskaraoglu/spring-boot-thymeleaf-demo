@@ -192,7 +192,7 @@
                         <tbody>
                             <tr th:each="movement : ${stockMovements}">
                                 <td th:text="${#temporals.format(movement.movementDate, 'dd.MM.yyyy HH:mm')}">01.01.2025 15:30</td>
-                                <td th:text="${movement.stockItemName}">STK0001 - Ürün Adı</td>
+                                <td th:text="${movement.stockItem != null ? movement.stockItem.stockName : 'Bilinmiyor'}">STK0001 - Ürün Adı</td>
                                 <td>
                                     <span th:if="${movement.movementType == 'IN'}" class="badge badge-pill badge-in badge-status">Giriş</span>
                                     <span th:if="${movement.movementType == 'OUT'}" class="badge badge-pill badge-out badge-status">Çıkış</span>

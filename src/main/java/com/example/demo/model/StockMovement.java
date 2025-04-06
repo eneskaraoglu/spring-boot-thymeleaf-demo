@@ -2,10 +2,30 @@ package com.example.demo.model;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "stock_movements")
 public class StockMovement {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long stockItemId;
-    private String stockItemName; // For display
+    // Bu alanları kaldırıyoruz çünkü ManyToOne ilişkisi kullanacağız
+    // private Long stockItemId;
+    // private String stockItemName; // For display
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stock_item_id", nullable = false)
+    private StockItem stockItem;
+    @Column(nullable = false)
     private String movementType; // IN, OUT
     private int quantity;
     private String reason;
@@ -17,10 +37,9 @@ public class StockMovement {
         this.movementDate = LocalDateTime.now();
     }
 
-    public StockMovement(Long id, Long stockItemId, String stockItemName, String movementType, int quantity, String reason, String referenceNo, String notes) {
+    public StockMovement(Long id, StockItem stockItem, String movementType, int quantity, String reason, String referenceNo, String notes) {
         this.id = id;
-        this.stockItemId = stockItemId;
-        this.stockItemName = stockItemName;
+        this.stockItem = stockItem;
         this.movementType = movementType;
         this.quantity = quantity;
         this.reason = reason;
@@ -38,20 +57,21 @@ public class StockMovement {
         this.id = id;
     }
 
+    public StockItem getStockItem() {
+        return stockItem;
+    }
+
+    public void setStockItem(StockItem stockItem) {
+        this.stockItem = stockItem;
+    }
+    
+    // Uyumluluk için yardımcı metotlar
     public Long getStockItemId() {
-        return stockItemId;
+        return stockItem != null ? stockItem.getId() : null;
     }
-
-    public void setStockItemId(Long stockItemId) {
-        this.stockItemId = stockItemId;
-    }
-
+    
     public String getStockItemName() {
-        return stockItemName;
-    }
-
-    public void setStockItemName(String stockItemName) {
-        this.stockItemName = stockItemName;
+        return stockItem != null ? stockItem.getStockName() : null;
     }
 
     public String getMovementType() {
@@ -106,7 +126,7 @@ public class StockMovement {
     public String toString() {
         return "StockMovement{" +
                 "id=" + id +
-                ", stockItemId=" + stockItemId +
+                ", stockItemId=" + getStockItemId() +
                 ", movementType='" + movementType + '\'' +
                 ", quantity=" + quantity +
                 ", movementDate=" + movementDate +

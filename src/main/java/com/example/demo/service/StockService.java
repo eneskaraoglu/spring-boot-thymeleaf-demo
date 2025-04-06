@@ -2,7 +2,15 @@ package com.example.demo.service;
 
 import com.example.demo.model.StockItem;
 import com.example.demo.model.StockMovement;
+import com.example.demo.repository.StockItemRepository;
+import com.example.demo.repository.StockMovementRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
@@ -11,12 +19,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class StockService {
 
-    private static final Map<Long, StockItem> stockItems = new HashMap<>();
-    private static final Map<Long, StockMovement> stockMovements = new HashMap<>();
-    private static Long stockItemIdCounter = 1L;
-    private static Long stockMovementIdCounter = 1L;
+    @Autowired
+    private StockItemRepository stockItemRepository;
+    
+    @Autowired
+    private StockMovementRepository stockMovementRepository;
+    
+    // Örnek veri oluşturmak için kullanılacak listeler (veritabanı kullanımında da işe yarar)
 
     // Kategoriler
     private static final List<String> categories = Arrays.asList(
@@ -35,7 +47,7 @@ public class StockService {
 
     @PostConstruct
     public void init() {
-        if (stockItems.isEmpty()) {
+        if (stockItemRepository.count() == 0) {
             generateSampleData();
         }
     }
@@ -61,19 +73,21 @@ public class StockService {
             double price = 10.0 + (random.nextDouble() * 990.0); // 10 ile 1000 arası
             price = Math.round(price * 100.0) / 100.0; // 2 decimal places
 
-            StockItem item = new StockItem(
-                    stockItemIdCounter++,
-                    code,
-                    name,
-                    category,
-                    unit,
-                    price,
-                    "Bu bir " + name + " ürünüdür."
-            );
+            StockItem item = new StockItem();
+            item.setStockCode(code);
+            item.setStockName(name);
+            item.setCategory(category);
+            item.setUnit(unit);
+            item.setUnitPrice(price);
+            item.setDescription("Bu bir " + name + " ürünüdür.");
+            item.setCurrentStock(0);
             
             // Rastgele oluşturulma tarihi (son 1 yıl içinde)
             int daysToSubtract = random.nextInt(365);
             item.setCreationDate(LocalDate.now().minusDays(daysToSubtract));
+            
+            // Stok kalemini kaydet
+            item = stockItemRepository.save(item);
             
             // Her ürün için rastgele stok hareketleri oluştur (1-5 arası)
             int movementCount = 1 + random.nextInt(5);
@@ -91,16 +105,13 @@ public class StockService {
                     quantity = Math.max(1, item.getCurrentStock() / 2);
                 }
                 
-                StockMovement movement = new StockMovement(
-                        stockMovementIdCounter++,
-                        item.getId(),
-                        item.getStockName(),
-                        movementType,
-                        quantity,
-                        movementReasons.get(random.nextInt(movementReasons.size())),
-                        "REF" + String.format("%06d", stockMovementIdCounter),
-                        "Otomatik oluşturulan hareket."
-                );
+                StockMovement movement = new StockMovement();
+                movement.setStockItem(item);
+                movement.setMovementType(movementType);
+                movement.setQuantity(quantity);
+                movement.setReason(movementReasons.get(random.nextInt(movementReasons.size())));
+                movement.setReferenceNo("REF" + String.format("%06d", i * 10 + j));
+                movement.setNotes("Otomatik oluşturulan hareket.");
                 
                 // Hareketin tarihini rastgele ayarla (ürün oluşturulma tarihinden sonra)
                 int movementDaysAfter = random.nextInt(daysToSubtract);
@@ -111,108 +122,101 @@ public class StockService {
                         )
                 );
                 
-                stockMovements.put(movement.getId(), movement);
-                item.addMovement(movement);
+                // Stok miktarını güncelle
+                if (movementType.equals("IN")) {
+                    item.setCurrentStock(item.getCurrentStock() + quantity);
+                } else if (movementType.equals("OUT")) {
+                    item.setCurrentStock(item.getCurrentStock() - quantity);
+                }
+                
+                // Stok hareketini kaydet
+                stockMovementRepository.save(movement);
             }
             
-            stockItems.put(item.getId(), item);
+            // Güncellenmiş stok miktarıyla stok kalemini kaydet
+            stockItemRepository.save(item);
         }
     }
 
     // Stok kalemleri için CRUD işlemleri
     public List<StockItem> findAllStockItems() {
-        return new ArrayList<>(stockItems.values());
+        return stockItemRepository.findAll();
     }
 
     public StockItem findStockItemById(Long id) {
-        return stockItems.get(id);
+        return stockItemRepository.findById(id).orElse(null);
     }
 
     public StockItem saveStockItem(StockItem stockItem) {
         if (stockItem.getId() == null) {
-            stockItem.setId(stockItemIdCounter++);
             stockItem.setCreationDate(LocalDate.now());
         }
-        stockItems.put(stockItem.getId(), stockItem);
-        return stockItem;
+        return stockItemRepository.save(stockItem);
     }
 
     public void deleteStockItemById(Long id) {
-        stockItems.remove(id);
+        stockItemRepository.deleteById(id);
     }
 
     // Stok hareketleri için işlemler
     public List<StockMovement> findAllStockMovements() {
-        return new ArrayList<>(stockMovements.values());
+        return stockMovementRepository.findAll();
     }
 
     public List<StockMovement> findStockMovementsByItemId(Long itemId) {
-        return stockMovements.values().stream()
-                .filter(movement -> movement.getStockItemId().equals(itemId))
-                .collect(Collectors.toList());
+        return stockMovementRepository.findByStockItem_Id(itemId);
     }
 
     public StockMovement findStockMovementById(Long id) {
-        return stockMovements.get(id);
+        return stockMovementRepository.findById(id).orElse(null);
     }
 
     public StockMovement saveStockMovement(StockMovement movement) {
         if (movement.getId() == null) {
-            movement.setId(stockMovementIdCounter++);
             movement.setMovementDate(LocalDateTime.now());
         }
         
-        StockItem stockItem = stockItems.get(movement.getStockItemId());
+        StockItem stockItem = movement.getStockItem();
         if (stockItem != null) {
             // Hareket tipi OUT ise, yeterli stok kontrolü yap
             if (movement.getMovementType().equals("OUT")) {
                 int existingStock = stockItem.getCurrentStock();
                 
                 // Eğer yeni hareket ise direkt kontrol et
-                if (stockMovements.get(movement.getId()) == null) {
+                if (movement.getId() == null) {
                     if (movement.getQuantity() > existingStock) {
                         throw new IllegalArgumentException("Yetersiz stok miktarı. Mevcut: " + existingStock);
                     }
                 } else {
                     // Güncelleme durumunda, eski hareketi bulup farkı hesapla
-                    StockMovement existingMovement = stockMovements.get(movement.getId());
-                    int oldQuantity = existingMovement.getQuantity();
-                    String oldType = existingMovement.getMovementType();
-                    
-                    if (oldType.equals("OUT") && movement.getMovementType().equals("OUT")) {
-                        // Sadece fark kadar stok kontrolü
-                        int diff = movement.getQuantity() - oldQuantity;
-                        if (diff > 0 && diff > existingStock) {
-                            throw new IllegalArgumentException("Yetersiz stok miktarı. Mevcut: " + existingStock);
+                    StockMovement existingMovement = stockMovementRepository.findById(movement.getId()).orElse(null);
+                    if (existingMovement != null) {
+                        int oldQuantity = existingMovement.getQuantity();
+                        String oldType = existingMovement.getMovementType();
+                        
+                        if (oldType.equals("OUT") && movement.getMovementType().equals("OUT")) {
+                            // Sadece fark kadar stok kontrolü
+                            int diff = movement.getQuantity() - oldQuantity;
+                            if (diff > 0 && diff > existingStock) {
+                                throw new IllegalArgumentException("Yetersiz stok miktarı. Mevcut: " + existingStock);
+                            }
+                        } else if (oldType.equals("IN") && movement.getMovementType().equals("OUT")) {
+                            // IN'den OUT'a dönüşürse
+                            int totalEffect = oldQuantity + movement.getQuantity();
+                            if (totalEffect > existingStock) {
+                                throw new IllegalArgumentException("Yetersiz stok miktarı. Mevcut: " + existingStock);
+                            }
                         }
-                    } else if (oldType.equals("IN") && movement.getMovementType().equals("OUT")) {
-                        // IN'den OUT'a dönüşürse
-                        int totalEffect = oldQuantity + movement.getQuantity();
-                        if (totalEffect > existingStock) {
-                            throw new IllegalArgumentException("Yetersiz stok miktarı. Mevcut: " + existingStock);
+                        
+                        // Eski hareketin etkisini geri al
+                        if (oldType.equals("IN")) {
+                            stockItem.setCurrentStock(stockItem.getCurrentStock() - oldQuantity);
+                        } else if (oldType.equals("OUT")) {
+                            stockItem.setCurrentStock(stockItem.getCurrentStock() + oldQuantity);
                         }
                     }
                 }
             }
-            
-            // Eski hareketi temizle (güncelleme durumu)
-            if (stockMovements.containsKey(movement.getId())) {
-                StockMovement oldMovement = stockMovements.get(movement.getId());
-                // Eski hareketi stok kaleminden kaldır
-                List<StockMovement> movements = stockItem.getMovements();
-                movements.removeIf(m -> m.getId().equals(oldMovement.getId()));
-                
-                // Eski hareketin etkisini geri al
-                if (oldMovement.getMovementType().equals("IN")) {
-                    stockItem.setCurrentStock(stockItem.getCurrentStock() - oldMovement.getQuantity());
-                } else if (oldMovement.getMovementType().equals("OUT")) {
-                    stockItem.setCurrentStock(stockItem.getCurrentStock() + oldMovement.getQuantity());
-                }
-            }
-            
-            // Stok hareketini ekle
-            stockMovements.put(movement.getId(), movement);
-            movement.setStockItemName(stockItem.getStockName());
             
             // Stok miktarını güncelle
             if (movement.getMovementType().equals("IN")) {
@@ -221,17 +225,18 @@ public class StockService {
                 stockItem.setCurrentStock(stockItem.getCurrentStock() - movement.getQuantity());
             }
             
-            // Stok kalemine hareketi ekle
-            stockItem.getMovements().add(movement);
+            // Stok kalemini kaydet
+            stockItemRepository.save(stockItem);
         }
         
-        return movement;
+        // Hareketi kaydet
+        return stockMovementRepository.save(movement);
     }
 
     public void deleteStockMovementById(Long id) {
-        StockMovement movement = stockMovements.get(id);
+        StockMovement movement = stockMovementRepository.findById(id).orElse(null);
         if (movement != null) {
-            StockItem stockItem = stockItems.get(movement.getStockItemId());
+            StockItem stockItem = movement.getStockItem();
             if (stockItem != null) {
                 // Stok miktarını geri al
                 if (movement.getMovementType().equals("IN")) {
@@ -240,11 +245,12 @@ public class StockService {
                     stockItem.setCurrentStock(stockItem.getCurrentStock() + movement.getQuantity());
                 }
                 
-                // Stok kaleminden hareketi kaldır
-                stockItem.getMovements().removeIf(m -> m.getId().equals(id));
+                // Stok kalemini güncelle
+                stockItemRepository.save(stockItem);
             }
             
-            stockMovements.remove(id);
+            // İlişkisel bütünlüğü korumak için hareketi veritabanından sil
+            stockMovementRepository.deleteById(id);
         }
     }
 
@@ -262,35 +268,30 @@ public class StockService {
     }
     
     // Pagination için metotlar
-    public List<StockItem> findPaginatedStockItems(int page, int size) {
-        List<StockItem> all = findAllStockItems();
-        int fromIndex = page * size;
-        int toIndex = Math.min(fromIndex + size, all.size());
-        
-        if (fromIndex >= all.size()) {
-            return new ArrayList<>();
+    public Page<StockItem> findPaginatedStockItems(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return stockItemRepository.findAll(pageable);
+    }
+    
+    public long getTotalStockItems() {
+        return stockItemRepository.count();
+    }
+    
+    public Page<StockMovement> findPaginatedStockMovements(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return stockMovementRepository.findAll(pageable);
+    }
+    
+    public long getTotalStockMovements() {
+        return stockMovementRepository.count();
+    }
+    
+    // Stok kalemlerini arama
+    public Page<StockItem> searchStockItems(String searchTerm, int page, int size) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return findPaginatedStockItems(page, size);
         }
-        
-        return all.subList(fromIndex, toIndex);
-    }
-    
-    public int getTotalStockItems() {
-        return stockItems.size();
-    }
-    
-    public List<StockMovement> findPaginatedStockMovements(int page, int size) {
-        List<StockMovement> all = findAllStockMovements();
-        int fromIndex = page * size;
-        int toIndex = Math.min(fromIndex + size, all.size());
-        
-        if (fromIndex >= all.size()) {
-            return new ArrayList<>();
-        }
-        
-        return all.subList(fromIndex, toIndex);
-    }
-    
-    public int getTotalStockMovements() {
-        return stockMovements.size();
+        Pageable pageable = PageRequest.of(page, size);
+        return stockItemRepository.searchByCodeOrName(searchTerm.trim(), pageable);
     }
 }

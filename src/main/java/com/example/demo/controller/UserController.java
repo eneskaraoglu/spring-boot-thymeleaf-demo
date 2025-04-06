@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +20,14 @@ public class UserController {
     }
 
     @GetMapping
-    public String listUsers(Model model) {
-        model.addAttribute("users", userService.findAll());
+    public String listUsers(@RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "10") int size,
+                          Model model) {
+        Page<User> userPage = userService.findPaginated(page, size);
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("pageSize", size);
         model.addAttribute("pageTitle", "Kullanıcı Listesi");
         return "users/list";
     }

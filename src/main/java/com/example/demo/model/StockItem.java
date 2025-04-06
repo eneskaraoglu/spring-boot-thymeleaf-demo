@@ -4,9 +4,24 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "stock_items")
 public class StockItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true, nullable = false)
     private String stockCode;
+    @Column(nullable = false)
     private String stockName;
     private String category;
     private String unit;
@@ -14,6 +29,7 @@ public class StockItem {
     private LocalDate creationDate;
     private String description;
     private boolean active;
+    @OneToMany(mappedBy = "stockItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StockMovement> movements;
     private int currentStock;
 

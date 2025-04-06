@@ -141,11 +141,11 @@
                     <!-- Stok Ürünü Seçimi -->
                     <div class="form-group">
                         <label for="stockItemId" class="required-label">Stok Kalemi</label>
-                        <select class="form-control" id="stockItemId" th:field="*{stockItemId}" required 
+                        <select class="form-control" id="stockItemId" th:field="*{stockItem}" required 
                                 th:disabled="${!isNew && stockMovement.id != null}">
                             <option value="">-- Stok Kalemi Seçin --</option>
-                            <option th:each="item : ${stockItems}" th:value="${item.id}" 
-                                    th:text="${item.stockCode + ' - ' + item.stockName + ' (' + item.currentStock + ' ' + item.unit + ')'}">
+                      <option th:each="item : ${stockItems}" th:value="${item.id}" 
+                      th:text="${item.stockCode + ' - ' + item.stockName + ' (' + item.currentStock + ' ' + item.unit + ')'}">
                                 STK0001 - Ürün Adı (50 Adet)
                             </option>
                         </select>
