@@ -7,12 +7,16 @@ import com.example.demo.repository.StockMovementRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,6 +31,9 @@ public class StockService {
     
     @Autowired
     private StockMovementRepository stockMovementRepository;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
     
     // Örnek veri oluşturmak için kullanılacak listeler (veritabanı kullanımında da işe yarar)
 
@@ -293,5 +300,124 @@ public class StockService {
         }
         Pageable pageable = PageRequest.of(page, size);
         return stockItemRepository.searchByCodeOrName(searchTerm.trim(), pageable);
+    }
+    
+    // Stok kodu ve adına göre detaylı arama
+    public Page<StockItem> searchStockItemsByCodeAndName(String stockCode, String stockName, String category, String active, int page, int size) {
+        // Her iki parametre de boşsa tüm kayıtları göster
+        if ((stockCode == null || stockCode.trim().isEmpty()) && 
+            (stockName == null || stockName.trim().isEmpty()) &&
+            (category == null || category.trim().isEmpty()) &&
+            (active == null || active.trim().isEmpty())) {
+            return findPaginatedStockItems(page, size);
+        }
+        
+        Pageable pageable = PageRequest.of(page, size);
+        
+        // Tüm filtreleri içeren JPQL sorgusu 
+        String jpql = "SELECT i FROM StockItem i WHERE 1=1";
+        Map<String, Object> params = new HashMap<>();
+        
+        if (stockCode != null && !stockCode.trim().isEmpty()) {
+            jpql += " AND LOWER(i.stockCode) LIKE LOWER(CONCAT('%', :stockCode, '%'))";
+            params.put("stockCode", stockCode.trim());
+        }
+        
+        if (stockName != null && !stockName.trim().isEmpty()) {
+            jpql += " AND LOWER(i.stockName) LIKE LOWER(CONCAT('%', :stockName, '%'))";
+            params.put("stockName", stockName.trim());
+        }
+        
+        if (category != null && !category.trim().isEmpty()) {
+            jpql += " AND i.category = :category";
+            params.put("category", category.trim());
+        }
+        
+        if (active != null && !active.trim().isEmpty()) {
+            jpql += " AND i.active = :active";
+            params.put("active", Boolean.parseBoolean(active));
+        }
+        
+        // Manuel sorguyu çalıştır ve sayfalama yaparak sonucu döndür
+        TypedQuery<StockItem> query = entityManager.createQuery(jpql, StockItem.class);
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            query.setParameter(entry.getKey(), entry.getValue());
+        }
+        
+        int totalItems = query.getResultList().size();
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
+        List<StockItem> items = query.getResultList();
+        
+        return new PageImpl<>(items, pageable, totalItems);
+    }
+    
+    // Stok hareketlerinde detaylı arama
+    public Page<StockMovement> searchStockMovements(
+            Long stockItemId, String movementType, String reason, String referenceNo, 
+            String startDate, String endDate, int page, int size) {
+        
+        // Tüm parametreler boşsa tüm kayıtları göster
+        if (stockItemId == null &&
+            (movementType == null || movementType.trim().isEmpty()) &&
+            (reason == null || reason.trim().isEmpty()) &&
+            (referenceNo == null || referenceNo.trim().isEmpty()) &&
+            (startDate == null || startDate.trim().isEmpty()) &&
+            (endDate == null || endDate.trim().isEmpty())) {
+            return findPaginatedStockMovements(page, size);
+        }
+        
+        Pageable pageable = PageRequest.of(page, size);
+        
+        // Tüm filtreleri içeren JPQL sorgusu 
+        String jpql = "SELECT m FROM StockMovement m WHERE 1=1";
+        Map<String, Object> params = new HashMap<>();
+        
+        if (stockItemId != null) {
+            jpql += " AND m.stockItem.id = :stockItemId";
+            params.put("stockItemId", stockItemId);
+        }
+        
+        if (movementType != null && !movementType.trim().isEmpty()) {
+            jpql += " AND m.movementType = :movementType";
+            params.put("movementType", movementType.trim());
+        }
+        
+        if (reason != null && !reason.trim().isEmpty()) {
+            jpql += " AND LOWER(m.reason) LIKE LOWER(CONCAT('%', :reason, '%'))";
+            params.put("reason", reason.trim());
+        }
+        
+        if (referenceNo != null && !referenceNo.trim().isEmpty()) {
+            jpql += " AND LOWER(m.referenceNo) LIKE LOWER(CONCAT('%', :referenceNo, '%'))";
+            params.put("referenceNo", referenceNo.trim());
+        }
+        
+        // Tarih aralığı filtreleri
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            jpql += " AND m.movementDate >= :startDate";
+            params.put("startDate", LocalDate.parse(startDate).atStartOfDay());
+        }
+        
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            jpql += " AND m.movementDate <= :endDate";
+            params.put("endDate", LocalDate.parse(endDate).atTime(23, 59, 59));
+        }
+        
+        // Hareketi tarihine göre azalan sıralama
+        jpql += " ORDER BY m.movementDate DESC";
+        
+        // Manuel sorguyu çalıştır ve sayfalama yaparak sonucu döndür
+        TypedQuery<StockMovement> query = entityManager.createQuery(jpql, StockMovement.class);
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            query.setParameter(entry.getKey(), entry.getValue());
+        }
+        
+        int totalItems = query.getResultList().size();
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
+        List<StockMovement> movements = query.getResultList();
+        
+        return new PageImpl<>(movements, pageable, totalItems);
     }
 }

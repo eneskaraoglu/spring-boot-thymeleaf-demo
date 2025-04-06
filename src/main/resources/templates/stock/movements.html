@@ -133,49 +133,119 @@
                 <h5 class="mb-0">Stok Hareketleri</h5>
                 <div>
                     <button id="toggleFilters" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-filter mr-1"></i>Filtreler
+                        <i class="fas fa-filter mr-1"></i>Filtreleri Gizle
                     </button>
                 </div>
             </div>
-            <div id="filterPanel" class="card-body bg-light" style="display: none;">
+            <div id="filterPanel" class="card-body bg-light">
                 <form th:action="@{/stock/movements}" method="get" class="row">
+                    <!-- Stok Kalemi -->
                     <div class="form-group col-md-4">
                         <label for="stockItemId">Stok Kalemi</label>
-                        <select class="form-control form-control-sm" id="stockItemId" name="stockItemId">
+                        <select class="form-control" id="stockItemId" name="stockItemId">
                             <option value="">Tümü</option>
                             <option th:each="item : ${stockItems}" th:value="${item.id}" 
-                                    th:text="${item.stockCode + ' - ' + item.stockName}">
+                                    th:text="${item.stockCode + ' - ' + item.stockName}"
+                                    th:selected="${stockItemId != null && stockItemId == item.id}">
                                 STK0001 - Ürün Adı
                             </option>
                         </select>
                     </div>
+                    
+                    <!-- Hareket Tipi -->
                     <div class="form-group col-md-2">
                         <label for="movementType">Hareket Tipi</label>
-                        <select class="form-control form-control-sm" id="movementType" name="movementType">
+                        <select class="form-control" id="movementType" name="movementType">
                             <option value="">Tümü</option>
-                            <option value="IN">Giriş</option>
-                            <option value="OUT">Çıkış</option>
+                            <option value="IN" th:selected="${movementType == 'IN'}">Giriş</option>
+                            <option value="OUT" th:selected="${movementType == 'OUT'}">Cıkış</option>
                         </select>
                     </div>
+                    
+                    <!-- Neden -->
+                    <div class="form-group col-md-3">
+                        <label for="reason">Hareket Nedeni</label>
+                        <select class="form-control" id="reason" name="reason">
+                            <option value="">Tümü</option>
+                            <option th:each="reasonItem : ${movementReasons}" 
+                                    th:value="${reasonItem}" 
+                                    th:text="${reasonItem}"
+                                    th:selected="${reason == reasonItem}">
+                                Satın Alma
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <!-- Referans No -->
+                    <div class="form-group col-md-3">
+                        <label for="referenceNo">Referans No</label>
+                        <input type="text" class="form-control" id="referenceNo" name="referenceNo" 
+                              th:value="${referenceNo}" placeholder="Referans numarası girin...">
+                    </div>
+                    
+                    <!-- Tarih aralığı -->
                     <div class="form-group col-md-3">
                         <label for="startDate">Başlangıç Tarihi</label>
-                        <input type="text" class="form-control form-control-sm datepicker" id="startDate" name="startDate" placeholder="GG/AA/YYYY">
+                        <input type="text" class="form-control datepicker" id="startDate" name="startDate" 
+                               th:value="${startDate}" placeholder="YYYY-MM-DD">
                     </div>
                     <div class="form-group col-md-3">
                         <label for="endDate">Bitiş Tarihi</label>
-                        <input type="text" class="form-control form-control-sm datepicker" id="endDate" name="endDate" placeholder="GG/AA/YYYY">
+                        <input type="text" class="form-control datepicker" id="endDate" name="endDate" 
+                               th:value="${endDate}" placeholder="YYYY-MM-DD">
                     </div>
-                    <div class="col-12 text-right">
-                        <button type="submit" class="btn btn-primary btn-sm">
+                    
+                    <!-- Arama ve Temizleme butonları -->
+                    <div class="form-group col-12 mt-3 text-right">
+                        <a th:href="@{/stock/movements}" class="btn btn-secondary mr-2">
+                            <i class="fas fa-times mr-1"></i>Temizle
+                        </a>
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search mr-1"></i>Ara
-                        </button>
-                        <button type="reset" class="btn btn-secondary btn-sm ml-2">
-                            <i class="fas fa-redo mr-1"></i>Temizle
                         </button>
                     </div>
                 </form>
             </div>
             <div class="card-body">
+                <!-- Arama sonuçları bildirimi -->
+                <div th:if="${stockItemId != null || movementType != null || reason != null || referenceNo != null || startDate != null || endDate != null}" class="alert alert-info">
+                    <i class="fas fa-search mr-2"></i>
+                    <span>Arama sonuçları:</span>
+                    
+                    <!-- Stok kalemi için -->
+                    <span th:if="${stockItemId != null}" class="ml-2">
+                        <strong>Stok Kalemi:</strong> 
+                        <span th:each="item : ${stockItems}" th:if="${item.id == stockItemId}" th:text="${item.stockCode + ' - ' + item.stockName}"></span>
+                    </span>
+                    
+                    <!-- Hareket tipi için -->
+                    <span th:if="${movementType != null && movementType != ''}" class="ml-2">
+                        <strong>Hareket Tipi:</strong> 
+                        <span th:if="${movementType == 'IN'}">Giriş</span>
+                        <span th:if="${movementType == 'OUT'}">Çıkış</span>
+                    </span>
+                    
+                    <!-- Neden için -->
+                    <span th:if="${reason != null && reason != ''}" class="ml-2">
+                        <strong>Neden:</strong> <span th:text="${reason}"></span>
+                    </span>
+                    
+                    <!-- Referans No için -->
+                    <span th:if="${referenceNo != null && referenceNo != ''}" class="ml-2">
+                        <strong>Ref. No:</strong> <span th:text="${referenceNo}"></span>
+                    </span>
+                    
+                    <!-- Tarih aralığı için -->
+                    <span th:if="${startDate != null && startDate != ''}" class="ml-2">
+                        <strong>Başlangıç:</strong> <span th:text="${startDate}"></span>
+                    </span>
+                    
+                    <span th:if="${endDate != null && endDate != ''}" class="ml-2">
+                        <strong>Bitiş:</strong> <span th:text="${endDate}"></span>
+                    </span>
+                    
+                    <a th:href="@{/stock/movements}" class="btn btn-sm btn-outline-primary ml-3">Tüm Kayıtları Göster</a>
+                </div>
                 <div class="table-responsive">
                     <table id="stockMovementsTable" class="table table-striped table-hover">
                         <thead class="thead-light">
@@ -228,26 +298,26 @@
                     <nav aria-label="Page navigation" th:if="${totalPages > 1}">
                         <ul class="pagination pagination-sm">
                             <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/stock/movements(page=0, size=${pageSize})}" aria-label="First">
+                                <a class="page-link" th:href="@{/stock/movements(page=0, size=${pageSize}, stockItemId=${stockItemId}, movementType=${movementType}, reason=${reason}, referenceNo=${referenceNo}, startDate=${startDate}, endDate=${endDate})}" aria-label="First">
                                     <span aria-hidden="true">&laquo;&laquo;</span>
                                 </a>
                             </li>
                             <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/stock/movements(page=${currentPage - 1}, size=${pageSize})}" aria-label="Previous">
+                                <a class="page-link" th:href="@{/stock/movements(page=${currentPage - 1}, size=${pageSize}, stockItemId=${stockItemId}, movementType=${movementType}, reason=${reason}, referenceNo=${referenceNo}, startDate=${startDate}, endDate=${endDate})}" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
                             <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
                                 th:classappend="${currentPage == i ? 'active' : ''}">
-                                <a class="page-link" th:href="@{/stock/movements(page=${i}, size=${pageSize})}" th:text="${i + 1}">1</a>
+                                <a class="page-link" th:href="@{/stock/movements(page=${i}, size=${pageSize}, stockItemId=${stockItemId}, movementType=${movementType}, reason=${reason}, referenceNo=${referenceNo}, startDate=${startDate}, endDate=${endDate})}" th:text="${i + 1}">1</a>
                             </li>
                             <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/stock/movements(page=${currentPage + 1}, size=${pageSize})}" aria-label="Next">
+                                <a class="page-link" th:href="@{/stock/movements(page=${currentPage + 1}, size=${pageSize}, stockItemId=${stockItemId}, movementType=${movementType}, reason=${reason}, referenceNo=${referenceNo}, startDate=${startDate}, endDate=${endDate})}" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
                             <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/stock/movements(page=${totalPages - 1}, size=${pageSize})}" aria-label="Last">
+                                <a class="page-link" th:href="@{/stock/movements(page=${totalPages - 1}, size=${pageSize}, stockItemId=${stockItemId}, movementType=${movementType}, reason=${reason}, referenceNo=${referenceNo}, startDate=${startDate}, endDate=${endDate})}" aria-label="Last">
                                     <span aria-hidden="true">&raquo;&raquo;</span>
                                 </a>
                             </li>
@@ -272,7 +342,7 @@
             // DataTable initialization
             $('#stockMovementsTable').DataTable({
                 "ordering": true,
-                "searching": true,
+                "searching": false,  // Kendi arama özelliğimizi kullanıyoruz
                 "paging": false,
                 "info": false,
                 "responsive": true,
@@ -284,14 +354,27 @@
             // Filter toggle button
             $('#toggleFilters').click(function() {
                 $('#filterPanel').slideToggle();
+                
+                // Buton metnini değiştir
+                if ($(this).find('i').next().text() === 'Filtreleri Gizle') {
+                    $(this).find('i').next().text('Filtreleri Göster');
+                } else {
+                    $(this).find('i').next().text('Filtreleri Gizle');
+                }
             });
             
             // Date picker
             $(".datepicker").flatpickr({
-                dateFormat: "Y-m-d",
+                dateFormat: "Y-m-d",  // YYYY-MM-DD formatında tarih
                 locale: "tr",
                 allowInput: true
             });
+            
+            // Filtre parametrelerinden herhangi biri varsa, filtreleri otomatik olarak göster
+            if ($('#stockItemId').val() || $('#movementType').val() || $('#reason').val() || $('#referenceNo').val() || 
+                $('#startDate').val() || $('#endDate').val()) {
+                $('#filterPanel').show();
+            }
         });
     </script>
 </body>

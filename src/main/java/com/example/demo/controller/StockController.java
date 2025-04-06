@@ -29,12 +29,28 @@ public class StockController {
     public String listStockItems(@RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size,
                                 @RequestParam(required = false) String search,
+                                @RequestParam(required = false) String stockCode,
+                                @RequestParam(required = false) String stockName,
+                                @RequestParam(required = false) String searchCategory,
+                                @RequestParam(required = false) String searchActive,
                                 Model model) {
         Page<StockItem> stockItemPage;
         
+        // Eski genel arama parametresi (geriye dönük uyumluluk için)
         if (search != null && !search.trim().isEmpty()) {
             stockItemPage = stockService.searchStockItems(search, page, size);
             model.addAttribute("search", search);
+        } 
+        // Yeni detaylı arama parametreleri
+        else if ((stockCode != null && !stockCode.trim().isEmpty()) || 
+                 (stockName != null && !stockName.trim().isEmpty()) ||
+                 (searchCategory != null && !searchCategory.trim().isEmpty()) ||
+                 (searchActive != null && !searchActive.trim().isEmpty())) {
+            stockItemPage = stockService.searchStockItemsByCodeAndName(stockCode, stockName, searchCategory, searchActive, page, size);
+            model.addAttribute("stockCode", stockCode);
+            model.addAttribute("stockName", stockName);
+            model.addAttribute("searchCategory", searchCategory);
+            model.addAttribute("searchActive", searchActive);
         } else {
             stockItemPage = stockService.findPaginatedStockItems(page, size);
         }
@@ -48,6 +64,8 @@ public class StockController {
         model.addAttribute("pageSize", size);
         model.addAttribute("pageTitle", "Stok Tanımlama");
         model.addAttribute("categories", stockService.getAllCategories());
+        model.addAttribute("searchCategory", searchCategory);  // Kategori filtresini modele ekle
+        model.addAttribute("searchActive", searchActive);      // Durum filtresini modele ekle
         
         return "stock/items";
     }
@@ -114,8 +132,37 @@ public class StockController {
     @GetMapping("/movements")
     public String listStockMovements(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "10") int size,
+                                     @RequestParam(required = false) Long stockItemId,
+                                     @RequestParam(required = false) String movementType,
+                                     @RequestParam(required = false) String reason,
+                                     @RequestParam(required = false) String referenceNo,
+                                     @RequestParam(required = false) String startDate,
+                                     @RequestParam(required = false) String endDate,
                                      Model model) {
-        Page<StockMovement> stockMovementPage = stockService.findPaginatedStockMovements(page, size);
+        Page<StockMovement> stockMovementPage;
+        
+        // Filtreleme parametreleri varsa
+        if (stockItemId != null || 
+            (movementType != null && !movementType.trim().isEmpty()) ||
+            (reason != null && !reason.trim().isEmpty()) ||
+            (referenceNo != null && !referenceNo.trim().isEmpty()) ||
+            (startDate != null && !startDate.trim().isEmpty()) ||
+            (endDate != null && !endDate.trim().isEmpty())) {
+            
+            stockMovementPage = stockService.searchStockMovements(
+                stockItemId, movementType, reason, referenceNo, startDate, endDate, page, size);
+                
+            // Model'e arama parametrelerini ekle
+            model.addAttribute("stockItemId", stockItemId);
+            model.addAttribute("movementType", movementType);
+            model.addAttribute("reason", reason);
+            model.addAttribute("referenceNo", referenceNo);
+            model.addAttribute("startDate", startDate);
+            model.addAttribute("endDate", endDate);
+        } else {
+            stockMovementPage = stockService.findPaginatedStockMovements(page, size);
+        }
+        
         long totalItems = stockService.getTotalStockMovements();
         int totalPages = stockMovementPage.getTotalPages();
         
@@ -124,6 +171,8 @@ public class StockController {
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("pageSize", size);
         model.addAttribute("pageTitle", "Stok Hareketleri");
+        model.addAttribute("stockItems", stockService.findAllStockItems()); // Filtre için stok kalemlerini ekle
+        model.addAttribute("movementReasons", stockService.getAllMovementReasons()); // Filtre için hareket nedenlerini ekle
         
         return "stock/movements";
     }

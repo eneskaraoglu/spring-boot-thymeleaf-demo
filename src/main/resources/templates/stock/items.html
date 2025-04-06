@@ -132,48 +132,97 @@
                 <h5 class="mb-0">Stok Kalemleri</h5>
                 <div>
                     <button id="toggleFilters" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-filter mr-1"></i>Filtreler
+                        <i class="fas fa-filter mr-1"></i>Filtreleri Gizle
                     </button>
                 </div>
             </div>
             
-            <div id="filterPanel" class="card-body bg-light" style="display: none;">
+            <div id="filterPanel" class="card-body bg-light">
                 <form th:action="@{/stock/items}" method="get" class="row">
-                    <div class="form-group col-md-6">
-                        <label for="search">Stok Kodu veya Adına Göre Ara</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="search" name="search" 
-                                  th:value="${search}" placeholder="Stok kodu veya adı girin...">
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <!-- Genel arama kutusu (geriye dönük uyumluluk için saklı) -->
+                    <input type="hidden" name="search" th:value="${search}">
+                    
+                    <!-- Stok Kodu -->
+                    <div class="form-group col-md-3">
+                        <label for="stockCode">Stok Kodu</label>
+                        <input type="text" class="form-control" id="stockCode" name="stockCode" 
+                              th:value="${stockCode}" placeholder="Stok kodu girin...">
                     </div>
+                    
+                    <!-- Stok Adı -->
+                    <div class="form-group col-md-3">
+                        <label for="stockName">Stok Adı</label>
+                        <input type="text" class="form-control" id="stockName" name="stockName" 
+                              th:value="${stockName}" placeholder="Stok adı girin...">
+                    </div>
+                    
+                    <!-- Kategori -->
                     <div class="form-group col-md-3">
                         <label for="searchCategory">Kategori</label>
-                        <select class="form-control form-control-sm" id="searchCategory" name="searchCategory">
+                        <select class="form-control" id="searchCategory" name="searchCategory">
                             <option value="">Tümü</option>
-                            <option th:each="category : ${categories}" th:value="${category}" th:text="${category}">Kategori</option>
+                            <option th:each="category : ${categories}" 
+                                    th:value="${category}" 
+                                    th:text="${category}"
+                                    th:selected="${category == searchCategory}">Kategori</option>
                         </select>
                     </div>
+                    
+                    <!-- Durum -->
                     <div class="form-group col-md-3">
                         <label for="searchActive">Durum</label>
-                        <select class="form-control form-control-sm" id="searchActive" name="searchActive">
+                        <select class="form-control" id="searchActive" name="searchActive">
                             <option value="">Tümü</option>
-                            <option value="true">Aktif</option>
-                            <option value="false">Pasif</option>
+                            <option value="true" th:selected="${searchActive == 'true'}">Aktif</option>
+                            <option value="false" th:selected="${searchActive == 'false'}">Pasif</option>
                         </select>
+                    </div>
+                    
+                    <!-- Arama Butonu -->
+                    <div class="form-group col-12 mt-3 text-right">
+                        <a th:href="@{/stock/items}" class="btn btn-secondary mr-2">
+                            <i class="fas fa-times mr-1"></i>Temizle
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search mr-1"></i>Ara
+                        </button>
                     </div>
                 </form>
             </div>
             
             <div class="card-body">
                 <!-- Arama sonuçları bildirimi -->
-                <div th:if="${search != null}" class="alert alert-info">
+                <div th:if="${search != null || stockCode != null || stockName != null || searchCategory != null || searchActive != null}" class="alert alert-info">
                     <i class="fas fa-search mr-2"></i>
-                    <span th:text="${'\'' + search + '\' arama sonuçları:'}">Arama sonuçları</span>
+                    <span>Arama sonuçları:</span>
+                    
+                    <!-- Genel arama için -->
+                    <span th:if="${search != null && search != ''}" class="ml-2">
+                        <strong>Genel:</strong> <span th:text="${search}"></span>
+                    </span>
+                    
+                    <!-- Stok kodu için -->
+                    <span th:if="${stockCode != null && stockCode != ''}" class="ml-2">
+                        <strong>Stok Kodu:</strong> <span th:text="${stockCode}"></span>
+                    </span>
+                    
+                    <!-- Stok adı için -->
+                    <span th:if="${stockName != null && stockName != ''}" class="ml-2">
+                        <strong>Stok Adı:</strong> <span th:text="${stockName}"></span>
+                    </span>
+                    
+                    <!-- Kategori için -->
+                    <span th:if="${searchCategory != null && searchCategory != ''}" class="ml-2">
+                        <strong>Kategori:</strong> <span th:text="${searchCategory}"></span>
+                    </span>
+                    
+                    <!-- Durum için -->
+                    <span th:if="${searchActive != null && searchActive != ''}" class="ml-2">
+                        <strong>Durum:</strong> 
+                        <span th:if="${searchActive == 'true'}">Aktif</span>
+                        <span th:if="${searchActive == 'false'}">Pasif</span>
+                    </span>
+                    
                     <a th:href="@{/stock/items}" class="btn btn-sm btn-outline-primary ml-3">Tüm Kayıtları Göster</a>
                 </div>
                 
@@ -231,26 +280,26 @@
                     <nav aria-label="Page navigation" th:if="${totalPages > 1}">
                         <ul class="pagination pagination-sm">
                             <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/stock/items(page=0, size=${pageSize}, search=${search})}" aria-label="First">
+                                <a class="page-link" th:href="@{/stock/items(page=0, size=${pageSize}, search=${search}, stockCode=${stockCode}, stockName=${stockName}, searchCategory=${searchCategory}, searchActive=${searchActive})}" aria-label="First">
                                     <span aria-hidden="true">&laquo;&laquo;</span>
                                 </a>
                             </li>
                             <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/stock/items(page=${currentPage - 1}, size=${pageSize}, search=${search})}" aria-label="Previous">
+                                <a class="page-link" th:href="@{/stock/items(page=${currentPage - 1}, size=${pageSize}, search=${search}, stockCode=${stockCode}, stockName=${stockName}, searchCategory=${searchCategory}, searchActive=${searchActive})}" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
                             <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
                                 th:classappend="${currentPage == i ? 'active' : ''}">
-                                <a class="page-link" th:href="@{/stock/items(page=${i}, size=${pageSize}, search=${search})}" th:text="${i + 1}">1</a>
+                                <a class="page-link" th:href="@{/stock/items(page=${i}, size=${pageSize}, search=${search}, stockCode=${stockCode}, stockName=${stockName}, searchCategory=${searchCategory}, searchActive=${searchActive})}" th:text="${i + 1}">1</a>
                             </li>
                             <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/stock/items(page=${currentPage + 1}, size=${pageSize}, search=${search})}" aria-label="Next">
+                                <a class="page-link" th:href="@{/stock/items(page=${currentPage + 1}, size=${pageSize}, search=${search}, stockCode=${stockCode}, stockName=${stockName}, searchCategory=${searchCategory}, searchActive=${searchActive})}" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
                             <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/stock/items(page=${totalPages - 1}, size=${pageSize}, search=${search})}" aria-label="Last">
+                                <a class="page-link" th:href="@{/stock/items(page=${totalPages - 1}, size=${pageSize}, search=${search}, stockCode=${stockCode}, stockName=${stockName}, searchCategory=${searchCategory}, searchActive=${searchActive})}" aria-label="Last">
                                     <span aria-hidden="true">&raquo;&raquo;</span>
                                 </a>
                             </li>
@@ -285,10 +334,18 @@
             // Filter toggle button
             $('#toggleFilters').click(function() {
                 $('#filterPanel').slideToggle();
+                
+                // Buton metnini değiştir
+                if ($(this).find('i').next().text() === 'Filtreleri Gizle') {
+                    $(this).find('i').next().text('Filtreleri Göster');
+                } else {
+                    $(this).find('i').next().text('Filtreleri Gizle');
+                }
             });
             
             // Show filter panel automatically if search is active
-            if ($('#search').val()) {
+            if ($('#search').val() || $('#stockCode').val() || $('#stockName').val() || 
+                $('#searchCategory').val() || $('#searchActive').val()) {
                 $('#filterPanel').show();
             }
         });
